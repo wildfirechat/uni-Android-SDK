@@ -1,0 +1,24 @@
+{
+    "nativePlugins": [
+        {
+            "plugins": [
+                {
+                    "type": "module",
+                    "name": "wfc-client",
+                    "class": "cn.wildfirechat.uni.client.WildfireModule"
+                }
+            ],
+            "hooksClass": "cn.wildfirechat.uni.client.ClientUniAppHookProxy"
+        },
+        {
+            "plugins": [
+                {
+                    "type": "module",
+                    "name": "wfc-kit",
+                    "class": "cn.wildfirechat.uni.kit.WildfireModule"
+                }
+            ],
+            "hooksClass": "cn.wildfirechat.uni.kit.KitUniAppHookProxy"
+        }
+    ]
+}

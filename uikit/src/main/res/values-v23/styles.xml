@@ -1,0 +1,14 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Customize your theme here. -->
+        <!-- 设置activity切换动画 -->
+        <!--<item name="android:windowAnimationStyle">@style/activityAnimation</item>-->
+        <!-- Customize color of navigation drawer icon and back arrow -->
+        <item name="colorBackgroundFloating">@color/white</item>
+        <item name="android:navigationBarColor">@color/gray14</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="colorAccent">@color/colorPrimary</item>
+    </style>
+</resources>
