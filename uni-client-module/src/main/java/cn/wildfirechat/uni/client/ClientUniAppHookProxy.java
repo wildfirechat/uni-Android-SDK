@@ -1,44 +1,29 @@
 package cn.wildfirechat.uni.client;
 
 import android.app.Application;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.os.Build;
-import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import cn.wildfirechat.client.NotInitializedExecption;
 import cn.wildfirechat.remote.ChatManager;
-import cn.wildfirechat.uni.client.callback.ConnectionStatusChangeListener;
-import cn.wildfirechat.uni.client.callback.ReceiveMessageListener;
-import cn.wildfirechat.uni.client.callback.WFAVEngineCallback;
 import io.dcloud.feature.uniapp.UniAppHookProxy;
 
 public class ClientUniAppHookProxy implements UniAppHookProxy {
 
-    private static final String TAG = "WildfireUniAppHookProxy";
-
-    private static ReceiveMessageListener receiveMessageListener = new ReceiveMessageListener();
-
-    private static ConnectionStatusChangeListener connectionStatusChangeListener = new ConnectionStatusChangeListener();
-
-    private static WFAVEngineCallback wfavEngineCallback = new WFAVEngineCallback();
+    private static final String TAG = "ClientUniAppHookProxy";
 
     @Override
     public void onSubProcessCreate(Application application) {
@@ -47,53 +32,25 @@ public class ClientUniAppHookProxy implements UniAppHookProxy {
 
     @Override
     public void onCreate(Application application) {
-//        initWFClient(application);
-        Log.e("jyj", "ClientUniAppHook onCreate");
-        Log.e("jyj", "isWfcUIKitEnable " + this.isWfcUIKitEnable());
+        Log.d(TAG, "application OnCreate " + isWfcUIKitEnable());
+        if (!this.isWfcUIKitEnable()) {
+            initWFClient(application);
+        } else {
+            // do nothing, 由 uikit 层去负责初始化
+        }
     }
 
+    // client 不支持音视频处理、pc 登录处理
     private void initWFClient(Application application) {
-        String IM_SERVER_HOST = null;
+        ChatManager.init(application, null);
         try {
-            ApplicationInfo mApplicationInfo = application.getApplicationContext().getPackageManager().getApplicationInfo(application.getApplicationContext().getPackageName(),
-                PackageManager.GET_META_DATA);
-            if (mApplicationInfo.metaData != null) {
-                IM_SERVER_HOST = (String) mApplicationInfo.metaData.getString("IM_SERVER_HOST");
-            }
-
-        } catch (NullPointerException e) {
-            Log.e("crsh:", "报空指针异常");
-            e.printStackTrace();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (IM_SERVER_HOST == null) {
-            Log.e(TAG, "必须填写 IM_SERVER_HOST,请在app/src/main/AndroidManifest.xml中配置");
-            Toast.makeText(application, IM_SERVER_HOST + "缺少IM_SERVER_HOST,请在app/src/main/AndroidManifest.xml中配置,应用即将关闭...", Toast.LENGTH_LONG).show();
-            new Handler().postDelayed(() -> {
-                throw new IllegalArgumentException("缺少IM_SERVER_HOST,请在app/src/main/AndroidManifest.xml中配置,应用即将关闭...\n");
-            }, 5 * 1000);
-        }
-
-        // 只在主进程进行初始化
-        // 通讯初始化
-        Log.i(TAG, "初始化野火sdk");
-        ChatManager.init(application, IM_SERVER_HOST);
-        try {
-            // 状态保存
             ChatManagerHolder.gChatManager = ChatManager.Instance();
-            ChatManagerHolder.gContext = application;
-
-            /*ChatManagerHolder.gChatManager.addOnReceiveMessageListener(receiveMessageListener);
-            // ChatManagerHolder.gChatManager.addRecallMessageListener(this);
-            // ChatManagerHolder.gChatManager.addFriendUpdateListener(this);
-            ChatManagerHolder.gChatManager.addConnectionChangeListener(connectionStatusChangeListener);*/
             ChatManagerHolder.gChatManager.startLog();
         } catch (NotInitializedExecption notInitializedExecption) {
             notInitializedExecption.printStackTrace();
         }
 
-        Log.i(TAG, "初始化事件处理");
+        Log.i(TAG, "初始化事件监听");
         try {
             Class<?> ChatManagerClazz = ChatManagerHolder.gChatManager.getClass();
             Method[] ChatManagerMethods = ChatManagerClazz.getDeclaredMethods();
@@ -115,33 +72,6 @@ public class ClientUniAppHookProxy implements UniAppHookProxy {
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
-        }
-
-        // PushService.init(application,  BuildConfig.LIBRARY_PACKAGE_NAME);
-        // PushService.init(application, application.getPackageName());
-
-        Log.i(TAG, "初始化文件系统");
-        setupWFCDirs();
-
-        Log.i(TAG, "cid: " + ChatManagerHolder.gChatManager.getClientId());
-    }
-
-    private void setupWFCDirs() {
-        File file = new File(Config.VIDEO_SAVE_DIR);
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-        file = new File(Config.AUDIO_SAVE_DIR);
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-        file = new File(Config.FILE_SAVE_DIR);
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-        file = new File(Config.PHOTO_SAVE_DIR);
-        if (!file.exists()) {
-            file.mkdirs();
         }
     }
 
@@ -178,16 +108,13 @@ class WildfireListenerHandler implements InvocationHandler {
             for (Object e : args) {
                 array.add(e);
             }
-        JSONObject object = new JSONObject();
-        object.put("data", array);
-        object.put("timestamp", System.currentTimeMillis());
         Log.i(TAG, MessageFormat.format("事件[{0}]:{1}", method.getName(), array.toJSONString()));
-        if (ChatManagerHolder.mUniSDKInstance == null)
-            ChatManagerHolder.qGlobalEvent.offer(new ArrayList() {{
-                add("wildfire");
-                add(object);
-            }});
-        else ChatManagerHolder.mUniSDKInstance.fireGlobalEventCallback("wildfire", object);
+        if (ChatManagerHolder.mUniSDKInstance != null) {
+            JSONObject object = new JSONObject();
+            object.put("data", array);
+            object.put("timestamp", System.currentTimeMillis());
+            ChatManagerHolder.mUniSDKInstance.fireGlobalEventCallback("wfc-event", object);
+        }
         return null;
     }
 

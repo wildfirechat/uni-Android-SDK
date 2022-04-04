@@ -4,8 +4,8 @@
             "plugins": [
                 {
                     "type": "module",
-                    "name": "wfc-client",
-                    "class": "cn.wildfirechat.uni.client.WildfireModule"
+                    "name": "uni-wfc-client",
+                    "class": "cn.wildfirechat.uni.client.ClientModule"
                 }
             ],
             "hooksClass": "cn.wildfirechat.uni.client.ClientUniAppHookProxy"
@@ -14,8 +14,8 @@
             "plugins": [
                 {
                     "type": "module",
-                    "name": "wfc-kit",
-                    "class": "cn.wildfirechat.uni.kit.WildfireModule"
+                    "name": "uni-wfc-kit",
+                    "class": "cn.wildfirechat.uni.kit.UIKitModule"
                 }
             ],
             "hooksClass": "cn.wildfirechat.uni.kit.KitUniAppHookProxy"

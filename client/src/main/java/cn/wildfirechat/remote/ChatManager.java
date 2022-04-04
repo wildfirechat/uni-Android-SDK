@@ -294,14 +294,16 @@ public class ChatManager {
 
     public static void init(Application context, String imServerHost) {
         Log.d(TAG, "init " + imServerHost);
-        checkSDKHost(imServerHost);
+        if (imServerHost != null){
+            checkSDKHost(imServerHost);
+        }
         if (INST != null) {
             // TODO: Already initialized
             return;
         }
-        if (TextUtils.isEmpty(imServerHost)) {
-            throw new IllegalArgumentException("imServerHost must be empty");
-        }
+//        if (TextUtils.isEmpty(imServerHost)) {
+//            throw new IllegalArgumentException("imServerHost must be empty");
+//        }
         gContext = context.getApplicationContext();
         INST = new ChatManager(imServerHost);
         INST.mainHandler = new Handler();
@@ -1899,6 +1901,17 @@ public class ChatManager {
             mClient.setBackupAddressStrategy(strategy);
         } catch (RemoteException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void setIMServerHost(String imServerHost) {
+        SERVER_HOST = imServerHost;
+        if (mClient != null) {
+            try {
+                mClient.setServerAddress(imServerHost);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -6278,17 +6291,18 @@ public class ChatManager {
 
     /**
      * 获取自己的自定义状态。
+     *
      * @return 返回自己的自定义状态。
      */
     public Pair<Integer, String> getMyCustomState() {
         try {
             String str = getUserSetting(UserSettingScope.CustomState, "");
-            if(TextUtils.isEmpty(str) || !str.contains("-")) {
+            if (TextUtils.isEmpty(str) || !str.contains("-")) {
                 return new Pair<>(0, null);
             }
             int index = str.indexOf("-");
             int state = Integer.parseInt(str.substring(0, index));
-            String text = str.substring(index+1);
+            String text = str.substring(index + 1);
             return new Pair<>(state, text);
         } catch (Exception e) {
             return new Pair<>(0, null);
@@ -6297,13 +6311,14 @@ public class ChatManager {
 
     /**
      * 设置自己的自定义状态。
-     * @param state     自定义状态
-     * @param text      自定义状态描述
-     * @param callback  设置结果回调
+     *
+     * @param state    自定义状态
+     * @param text     自定义状态描述
+     * @param callback 设置结果回调
      */
     public void setMyCustomState(int state, String text, GeneralCallback callback) {
         String str = state + "-";
-        if(!TextUtils.isEmpty(text)) {
+        if (!TextUtils.isEmpty(text)) {
             str += text;
         }
         setUserSetting(UserSettingScope.CustomState, "", str, callback);
@@ -6453,11 +6468,12 @@ public class ChatManager {
 
     /**
      * 设置代理，只支持socks5代理，只有专业版支持。
+     *
      * @param proxyInfo 代理信息
      */
     public void setProxyInfo(Socks5ProxyInfo proxyInfo) {
         this.proxyInfo = proxyInfo;
-        if(checkRemoteService()) {
+        if (checkRemoteService()) {
             try {
                 mClient.setProxyInfo(proxyInfo);
             } catch (RemoteException e) {
@@ -7414,7 +7430,7 @@ public class ChatManager {
                 if (!TextUtils.isEmpty(backupAddressHost))
                     mClient.setBackupAddress(backupAddressHost, backupAddressPort);
 
-                if(proxyInfo != null) {
+                if (proxyInfo != null) {
                     mClient.setProxyInfo(proxyInfo);
                 }
 

@@ -3,19 +3,18 @@ package cn.wildfirechat.uni.client;
 import android.app.Activity;
 import android.util.Log;
 
-import com.alibaba.fastjson.JSONObject;
-
-import java.util.Timer;
-import java.util.TimerTask;
-
 import cn.wildfirechat.remote.ChatManager;
+import cn.wildfirechat.remote.OnConnectionStatusChangeListener;
 import io.dcloud.feature.uniapp.annotation.UniJSMethod;
+import io.dcloud.feature.uniapp.bridge.UniJSCallback;
 import io.dcloud.feature.uniapp.common.UniModule;
 
 /**
- *  野火IM Android client扩展uniapp模块
+ * 野火IM Android client扩展uniapp模块
  */
-public class ClientModule extends UniModule {
+public class ClientModule extends UniModule implements OnConnectionStatusChangeListener {
+
+    private UniJSCallback connectStatusListener;
 
 
     private static final String TAG = "WfcClientModule";
@@ -34,37 +33,44 @@ public class ClientModule extends UniModule {
 
     @UniJSMethod(uiThread = false)
     public void init() {
+        Log.d(TAG, "init");
         ChatManagerHolder.mUniSDKInstance = mUniSDKInstance;
+        ChatManager.Instance().addConnectionChangeListener(this);
+        // TODO
     }
 
 
-    @UniJSMethod(uiThread = false)
-    public void connect(JSONObject jsonObject) {
-        if (mUniSDKInstance.getContext() instanceof Activity) {
-            // 通讯连接
-            String userId = jsonObject.getString("userId");
-            String token = jsonObject.getString("token");
-            if (null == userId || null == token) {
-                Log.e(TAG, "没有野火的 userId 或者 token");
-                return;
-            }
+    @UniJSMethod
+    public void setOnConnectStatusListener(UniJSCallback callback) {
+        this.connectStatusListener = callback;
+    }
 
+    @UniJSMethod(uiThread = false)
+    public void connect(String imServerHost, String userId, String token) {
+        if (mUniSDKInstance.getContext() instanceof Activity) {
+            ChatManager.Instance().setIMServerHost(imServerHost);
             ChatManagerHolder.gChatManager.connect(userId, token);
-            Timer timer = new Timer();
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-                    Log.i(TAG, "连接状态: " + String.valueOf(ChatManagerHolder.gChatManager.getConnectionStatus()));
-                }
-            }, 1000); // 延时1秒
-            // 推送设置设备类型和通讯token
-            /*ChatManagerHolder.gChatManager
-                    .setDeviceToken(token, PushService.getPushServiceType().ordinal());*/
         }
     }
 
-    @UniJSMethod(uiThread = true)
+    @UniJSMethod
+    public void testAsyncFunc(String xxx, UniJSCallback callback) {
+
+    }
+
+    // ui 线程的方法异步执行
+    // 非 ui 线程的方法同步执行
+    @UniJSMethod(uiThread = false)
     public String getClientId() {
+        Log.d(TAG, "getClientId " + ChatManager.Instance().getClientId());
         return ChatManager.Instance().getClientId();
+    }
+
+    @Override
+    public void onConnectionStatusChange(int status) {
+        Log.d(TAG, "onConnectionStatusChange " + status + " " + (this.connectStatusListener == null));
+        if (this.connectStatusListener != null) {
+            this.connectStatusListener.invokeAndKeepAlive(status);
+        }
     }
 }

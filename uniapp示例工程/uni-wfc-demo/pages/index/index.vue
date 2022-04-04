@@ -1,44 +1,8 @@
 <template>
   <pre v-if="err" v-html="obj2html(err)"></pre>
   <div v-else style="display: flex">
-	<view :style="{ height: 20; color: red }>表单组件在label内</view>
-    <scroll-view scroll-y class="log" :style="{ height: 40}">
-      <div class="item" v-for="(pkg, i) in log" :key="log.length - i">
-        <template v-if="pkg.data">
-          <div class="title">
-            {{ pkg.data[0] }}
-            <span class="tag">{{ time(pkg.timestamp) }}</span>
-          </div>
-          <div>
-            <span v-for="(e, j) in pkg.tags" :key="j" class="tag">{{ e }}</span>
-          </div>
-          <pre
-            v-for="(e, j) in pkg.data"
-            :key="j"
-            v-html="j == 0 ? '' : obj2html(e)"
-          ></pre>
-        </template>
-        <pre v-else v-html="obj2html(pkg)"></pre>
-      </div>
-    </scroll-view>
-    <scroll-view scroll-y class="operation" :style="{ height: 30 }">
-      <input
-        v-model="userId"
-        placeholder="userId"
-        maxlength="-1"
-        style="width: auto"
-      />
-      <textarea
-        v-model="token"
-        placeholder="token"
-        maxlength="-1"
-        style="width: auto"
-      ></textarea>
-      <button @click="connect(userId, token)">登录野火</button>
-      <div style="height: 100px">
-        <!-- 占位,防止内容跑到屏幕外面 -->
-      </div>
-    </scroll-view>
+	<button @click="connect">连接</button>
+	<button >getClientId</button>
   </div>
 </template>
 
@@ -46,7 +10,7 @@
 import hanabi from "common/hanabi";
 import stringifyObject from "common/stringify-object";
 
-var wildfire = uni.requireNativePlugin("uni-wfc");
+var wfcClient = uni.requireNativePlugin("uni-wfc-client");
 
 var ConnectionStatus = {
   "-6": " SecretKey 不匹配",
@@ -82,14 +46,21 @@ export default {
       console.log(e);
       this.log = [this.interpreter(e), ...this.log];
     });
-    this.log = [wildfire.init(), ...this.log];
+    this.log = [wfcClient.init(), ...this.log];
     //#endif
-	let clientId = wildfire.getClientId();
+	let clientId = wfcClient.getClientId();
 	console.log('getclientId', clientId);
+	
+	wfcClient.setOnConnectStatusListener((status)=>{
+		console.log('connectStatus', status);
+	});
+	
   },
   methods: {
-    connect: (userId, token) => {
-      wildfire.connect({ userId, token });
+    connect: () => {
+		let userId = 'uiuJuJcc';
+		let token = 'P/xDVWeStEUmzKHlqRF+KJ7H59w70t8NgJvCGh7pRBwQ4YwdsEIW30136FL7MzRFN1RvXq5kKwckLohqbFqHQxFpMIRmYEfxwo0cDg4HBFqx2HXEWMOtn7NdWuJZCOP0UGn9U5DLg+H9r7MLqUC8+KVkf+pk42UALcwUpkOBYwA=';
+		wfcClient.connect('wildfirechat.net',userId, token );
     },
     obj2html: (data) => {
       return hanabi(
