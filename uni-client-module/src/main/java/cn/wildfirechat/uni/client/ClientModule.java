@@ -5,6 +5,7 @@ import android.util.Log;
 
 import cn.wildfirechat.remote.ChatManager;
 import cn.wildfirechat.remote.OnConnectionStatusChangeListener;
+import io.dcloud.feature.uniapp.AbsSDKInstance;
 import io.dcloud.feature.uniapp.annotation.UniJSMethod;
 import io.dcloud.feature.uniapp.bridge.UniJSCallback;
 import io.dcloud.feature.uniapp.common.UniModule;
@@ -18,6 +19,7 @@ public class ClientModule extends UniModule implements OnConnectionStatusChangeL
 
 
     private static final String TAG = "WfcClientModule";
+    static AbsSDKInstance uniSDKInstance;
 
 
     // 不知道为啥，未触发
@@ -35,12 +37,11 @@ public class ClientModule extends UniModule implements OnConnectionStatusChangeL
         // chatManager.removeOnReceiveMessageListener(receiveMessageListener);
     }
 
+    // 一定要调这个函数，触发对mUniSDKInstance 的赋值
     @UniJSMethod(uiThread = false)
     public void init() {
-        Log.d(TAG, "init");
-        ChatManagerHolder.mUniSDKInstance = mUniSDKInstance;
+        ClientModule.uniSDKInstance = mUniSDKInstance;
     }
-
 
     @UniJSMethod
     public void setOnConnectStatusListener(UniJSCallback callback) {
@@ -51,7 +52,7 @@ public class ClientModule extends UniModule implements OnConnectionStatusChangeL
     public void connect(String imServerHost, String userId, String token) {
         if (mUniSDKInstance.getContext() instanceof Activity) {
             ChatManager.Instance().setIMServerHost(imServerHost);
-            ChatManagerHolder.gChatManager.connect(userId, token);
+            ChatManager.Instance().connect(userId, token);
         }
     }
 

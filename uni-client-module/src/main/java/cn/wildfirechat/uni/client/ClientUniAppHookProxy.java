@@ -48,16 +48,16 @@ public class ClientUniAppHookProxy implements UniAppHookProxy {
     // client 不支持音视频处理、pc 登录处理
     private void initWFClient(Application application) {
         ChatManager.init(application, null);
+        ChatManager chatManager = ChatManager.Instance();
         try {
-            ChatManagerHolder.gChatManager = ChatManager.Instance();
-            ChatManagerHolder.gChatManager.startLog();
+            chatManager.startLog();
         } catch (NotInitializedExecption notInitializedExecption) {
             notInitializedExecption.printStackTrace();
         }
 
         Log.i(TAG, "初始化事件监听");
         try {
-            Class<?> ChatManagerClazz = ChatManagerHolder.gChatManager.getClass();
+            Class<?> ChatManagerClazz = chatManager.getClass();
             Method[] ChatManagerMethods = ChatManagerClazz.getDeclaredMethods();
 
             Pattern pattern = Pattern.compile("add(.*)Listener");
@@ -72,7 +72,7 @@ public class ClientUniAppHookProxy implements UniAppHookProxy {
                         ClientModule.class.getClassLoader(),
                         new Class[]{paramTypes[0]},
                         wildfireListenerHandler);
-                    method.invoke(ChatManagerHolder.gChatManager, Listener);
+                    method.invoke(chatManager, Listener);
                 }
             }
         } catch (IllegalAccessException | InvocationTargetException e) {
@@ -114,12 +114,12 @@ class WildfireListenerHandler implements InvocationHandler {
                 array.add(JSONObject.toJSONString(e, ClientUniAppHookProxy.serializeConfig));
             }
 
-        if (ChatManagerHolder.mUniSDKInstance != null) {
+        if (ClientModule.uniSDKInstance != null) {
             Log.d(TAG, MessageFormat.format("事件[{0}]:{1}", method.getName(), array.toJSONString()));
             JSONObject object = new JSONObject();
             object.put("args", array);
             object.put("timestamp", System.currentTimeMillis());
-            ChatManagerHolder.mUniSDKInstance.fireGlobalEventCallback("wfc-event", object);
+            ClientModule.uniSDKInstance.fireGlobalEventCallback("wfc-event", object);
         }
         return null;
     }
