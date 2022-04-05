@@ -9,8 +9,7 @@
 <script>
 import hanabi from "common/hanabi";
 import stringifyObject from "common/stringify-object";
-
-var wfcClient = uni.requireNativePlugin("uni-wfc-client");
+import wfc from '../../wfc/client/wfc.js'
 
 var ConnectionStatus = {
   "-6": " SecretKey 不匹配",
@@ -41,26 +40,19 @@ export default {
     this.err = "请​在​APP​端​测​试​哦";
     //#endif
 
+	console.log('mountedww')
     //#ifdef APP-PLUS
-    plus.globalEvent.addEventListener("wildfire", (e) => {
-      console.log(e);
-      this.log = [this.interpreter(e), ...this.log];
-    });
-    this.log = [wfcClient.init(), ...this.log];
+ 
     //#endif
-	let clientId = wfcClient.getClientId();
-	console.log('getclientId', clientId);
+	// console.log('getclientId', clientId);
 	
-	wfcClient.setOnConnectStatusListener((status)=>{
-		console.log('connectStatus', status);
-	});
 	
   },
   methods: {
     connect: () => {
 		let userId = 'uiuJuJcc';
 		let token = 'P/xDVWeStEUmzKHlqRF+KJ7H59w70t8NgJvCGh7pRBwQ4YwdsEIW30136FL7MzRFN1RvXq5kKwckLohqbFqHQxFpMIRmYEfxwo0cDg4HBFqx2HXEWMOtn7NdWuJZCOP0UGn9U5DLg+H9r7MLqUC8+KVkf+pk42UALcwUpkOBYwA=';
-		wfcClient.connect('wildfirechat.net',userId, token );
+		wfc.connect(userId, token );
     },
     obj2html: (data) => {
       return hanabi(

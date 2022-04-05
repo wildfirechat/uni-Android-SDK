@@ -8,6 +8,7 @@ import androidx.annotation.RequiresApi;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializeConfig;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -24,6 +25,7 @@ import io.dcloud.feature.uniapp.UniAppHookProxy;
 public class ClientUniAppHookProxy implements UniAppHookProxy {
 
     private static final String TAG = "ClientUniAppHookProxy";
+    static SerializeConfig serializeConfig;
 
     @Override
     public void onSubProcessCreate(Application application) {
@@ -35,6 +37,9 @@ public class ClientUniAppHookProxy implements UniAppHookProxy {
         Log.d(TAG, "application OnCreate " + isWfcUIKitEnable());
         if (!this.isWfcUIKitEnable()) {
             initWFClient(application);
+
+            serializeConfig = new SerializeConfig();
+            serializeConfig.put(Long.class, WfLongCodec.instance);
         } else {
             // do nothing, 由 uikit 层去负责初始化
         }
@@ -106,12 +111,13 @@ class WildfireListenerHandler implements InvocationHandler {
         array.add(method.getName());
         if (args != null)
             for (Object e : args) {
-                array.add(e);
+                array.add(JSONObject.toJSONString(e, ClientUniAppHookProxy.serializeConfig));
             }
-        Log.i(TAG, MessageFormat.format("事件[{0}]:{1}", method.getName(), array.toJSONString()));
+
         if (ChatManagerHolder.mUniSDKInstance != null) {
+            Log.d(TAG, MessageFormat.format("事件[{0}]:{1}", method.getName(), array.toJSONString()));
             JSONObject object = new JSONObject();
-            object.put("data", array);
+            object.put("args", array);
             object.put("timestamp", System.currentTimeMillis());
             ChatManagerHolder.mUniSDKInstance.fireGlobalEventCallback("wfc-event", object);
         }

@@ -19,9 +19,13 @@ public class ClientModule extends UniModule implements OnConnectionStatusChangeL
 
     private static final String TAG = "WfcClientModule";
 
-    /**
-     * sdk后处理
-     */
+
+    // 不知道为啥，未触发
+    @Override
+    public void onActivityCreate() {
+        super.onActivityCreate();
+    }
+
     @Override
     public void onActivityDestroy() {
         super.onActivityDestroy();
@@ -35,8 +39,6 @@ public class ClientModule extends UniModule implements OnConnectionStatusChangeL
     public void init() {
         Log.d(TAG, "init");
         ChatManagerHolder.mUniSDKInstance = mUniSDKInstance;
-        ChatManager.Instance().addConnectionChangeListener(this);
-        // TODO
     }
 
 
