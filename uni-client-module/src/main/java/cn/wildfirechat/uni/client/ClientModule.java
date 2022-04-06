@@ -12,8 +12,10 @@ import java.util.List;
 import cn.wildfirechat.message.MessageContent;
 import cn.wildfirechat.message.core.MessagePayload;
 import cn.wildfirechat.model.Conversation;
+import cn.wildfirechat.model.Socks5ProxyInfo;
+import cn.wildfirechat.model.UserInfo;
 import cn.wildfirechat.remote.ChatManager;
-import cn.wildfirechat.remote.OnConnectionStatusChangeListener;
+import cn.wildfirechat.remote.GetUserInfoCallback;
 import cn.wildfirechat.remote.SendMessageCallback;
 import io.dcloud.feature.uniapp.AbsSDKInstance;
 import io.dcloud.feature.uniapp.annotation.UniJSMethod;
@@ -22,8 +24,13 @@ import io.dcloud.feature.uniapp.common.UniModule;
 
 /**
  * 野火IM Android client扩展uniapp模块
+ * <p>
+ * 一些开发说明
+ * 1. 同步方法需要添加{@code @UniJSMethod(uiThread = false)} 注解
+ * 2. 异步方法需要添加{@code @UniJSMethod(uiThread = false)} 注解
+ * 3. 非基本类型的返回值，转换成 String 类型返回
  */
-public class ClientModule extends UniModule implements OnConnectionStatusChangeListener {
+public class ClientModule extends UniModule {
 
     private UniJSCallback connectStatusListener;
 
@@ -41,10 +48,6 @@ public class ClientModule extends UniModule implements OnConnectionStatusChangeL
     @Override
     public void onActivityDestroy() {
         super.onActivityDestroy();
-        // 删除监听器
-        Log.i(TAG, "应用销毁后处理");
-        // ChatManager chatManager = ChatManager.Instance();
-        // chatManager.removeOnReceiveMessageListener(receiveMessageListener);
     }
 
     // 一定要调这个函数，触发对mUniSDKInstance 的赋值
@@ -64,11 +67,6 @@ public class ClientModule extends UniModule implements OnConnectionStatusChangeL
             ChatManager.Instance().setIMServerHost(imServerHost);
             ChatManager.Instance().connect(userId, token);
         }
-    }
-
-    @UniJSMethod
-    public void testAsyncFunc(String xxx, UniJSCallback callback) {
-
     }
 
     @UniJSMethod(uiThread = true)
@@ -125,11 +123,93 @@ public class ClientModule extends UniModule implements OnConnectionStatusChangeL
         return ChatManager.Instance().getClientId();
     }
 
-    @Override
-    public void onConnectionStatusChange(int status) {
-        Log.d(TAG, "onConnectionStatusChange " + status + " " + (this.connectStatusListener == null));
-        if (this.connectStatusListener != null) {
-            this.connectStatusListener.invokeAndKeepAlive(status);
-        }
+
+    @UniJSMethod(uiThread = false)
+    public void setLastReceivedMessageUnRead(String strConv, String messageUid, String timestamp) {
+        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+        ChatManager.Instance().markAsUnRead(conversation, false);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void registerMessageFlag(int type, int flag) {
+        // TODO
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void useSM4() {
+        ChatManager.Instance().useSM4();
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void setProxyInfo(String host, String ip, int port, String userName, String password) {
+        Socks5ProxyInfo proxyInfo = new Socks5ProxyInfo(host, ip, port, userName, password);
+        ChatManager.Instance().setProxyInfo(proxyInfo);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void disconnect(int code) {
+        ChatManager.Instance().disconnect(false, false);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public long getServerDeltaTime() {
+        return ChatManager.Instance().getServerDeltaTime();
+    }
+
+    @UniJSMethod(uiThread = false)
+    public int getConnectionStatus() {
+        return ChatManager.Instance().getConnectionStatus();
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void setBackupAddressStrategy(int strategy) {
+        ChatManager.Instance().setBackupAddressStrategy(strategy);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void setBackupAddress(String backupHost, int backPort) {
+        ChatManager.Instance().setBackupAddress(backupHost, backPort);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void setUserAgent(String userAgent) {
+        ChatManager.Instance().setProtoUserAgent(userAgent);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void addHttpHeader(String header, String value) {
+        ChatManager.Instance().addHttpHeader(header, value);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getUserInfo(String userId, boolean refresh, String groupId) {
+        UserInfo userInfo = ChatManager.Instance().getUserInfo(userId, groupId, refresh);
+        return JSONObject.toJSONString(userInfo, ClientUniAppHookProxy.serializeConfig)
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getUserInfos(List<String> userIds, String groupId) {
+        List<UserInfo> userInfos = ChatManager.Instance().getUserInfos(userIds, groupId);
+        return JSONObject.toJSONString(userInfos, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void getUserInfoEx(String userId, boolean refresh, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().getUserInfo(userId, refresh, new GetUserInfoCallback() {
+            @Override
+            public void onSuccess(UserInfo userInfo) {
+                if (successCB != null) {
+                    successCB.invoke(JSONObject.toJSONString(userInfo, ClientUniAppHookProxy.serializeConfig));
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                if (failCB != null) {
+                    failCB.invoke(errorCode);
+                }
+            }
+        });
+
     }
 }

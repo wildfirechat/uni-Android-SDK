@@ -16,6 +16,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -122,7 +123,11 @@ class WildfireListenerHandler implements InvocationHandler {
         array.add(methodName);
         if (args != null)
             for (Object e : args) {
-                array.add(JSONObject.toJSONString(e, ClientUniAppHookProxy.serializeConfig));
+                if (e instanceof Map) {
+                    array.add(JSONObject.toJSONString(((Map)e).values(), ClientUniAppHookProxy.serializeConfig));
+                } else {
+                    array.add(JSONObject.toJSONString(e, ClientUniAppHookProxy.serializeConfig));
+                }
             }
 
         if (ClientModule.uniSDKInstance != null) {
@@ -134,6 +139,5 @@ class WildfireListenerHandler implements InvocationHandler {
         }
         return null;
     }
-
 }
 
