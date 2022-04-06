@@ -254,6 +254,27 @@ public class ChatManager {
         public int value() {
             return this.value;
         }
+
+        public static SearchUserType type(int type) {
+            SearchUserType searchUserType = null;
+            switch (type) {
+                case 0:
+                    searchUserType = General;
+                    break;
+                case 1:
+                    searchUserType = NameOrMobile;
+                    break;
+                case 2:
+                    searchUserType = Name;
+                    break;
+                case 3:
+                    searchUserType = Mobile;
+                    break;
+                default:
+                    throw new IllegalArgumentException("type " + searchUserType + " is invalid");
+            }
+            return searchUserType;
+        }
     }
 
     /**
@@ -294,7 +315,7 @@ public class ChatManager {
 
     public static void init(Application context, String imServerHost) {
         Log.d(TAG, "init " + imServerHost);
-        if (imServerHost != null){
+        if (imServerHost != null) {
             checkSDKHost(imServerHost);
         }
         if (INST != null) {
