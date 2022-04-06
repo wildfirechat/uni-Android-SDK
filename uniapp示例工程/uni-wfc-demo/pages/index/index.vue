@@ -2,7 +2,8 @@
   <pre v-if="err" v-html="obj2html(err)"></pre>
   <div v-else style="display: flex">
 	<button @click="connect">连接</button>
-	<button >getClientId</button>
+	<button @click="getClientId">getClientId</button>
+	<button @click="sendMessage">发送消息</button>
   </div>
 </template>
 
@@ -10,6 +11,8 @@
 import hanabi from "common/hanabi";
 import stringifyObject from "common/stringify-object";
 import wfc from '../../wfc/client/wfc.js'
+import Conversation from '../../wfc/model/conversation.js';
+import TextMessageContent from '../../wfc/messages/textMessageContent'
 
 var ConnectionStatus = {
   "-6": " SecretKey 不匹配",
@@ -42,32 +45,44 @@ export default {
 
 	console.log('mountedww')
     //#ifdef APP-PLUS
- 
+
     //#endif
 	// console.log('getclientId', clientId);
-	
-	
+
+
   },
   methods: {
     connect: () => {
-		let userId = 'uiuJuJcc';
-		let token = 'P/xDVWeStEUmzKHlqRF+KJ7H59w70t8NgJvCGh7pRBwQ4YwdsEIW30136FL7MzRFN1RvXq5kKwckLohqbFqHQxFpMIRmYEfxwo0cDg4HBFqx2HXEWMOtn7NdWuJZCOP0UGn9U5DLg+H9r7MLqUC8+KVkf+pk42UALcwUpkOBYwA=';
-		wfc.connect(userId, token );
+		let userId = '8Smy8ypp';
+		let token = "GyJLg063g1j5AgNfVMLU2CnBK1Q9bzbcqfMSjHedXxMEAinIAAbYJ39R/pK1tW7/P4sjt//q5lVNIkMvQqmN5rHUSlk1eFsvKfyaKN4bk1EbAE2h0nDxrPj3jGfdzrlkRCZhk5exV/XJPPwihyXy+akE/VU331auH5zmr+JNh5g=";		wfc.connect(userId, token );
     },
+
+    getClientId(){
+        let clientId = wfc.getClientId();
+        console.log('getClientId', clientId);
+    },
+
+    sendMessage(){
+        let conversation = new Conversation(0, 'FireRobot', 0)
+        let textMessageContent = new TextMessageContent(' 你好，小火。')
+        wfc.sendConversationMessage(conversation, textMessageContent, [], (messageId, timestamp) => {
+            console.log('onPrepared', messageId, timestamp);
+        }, (uploaded, total) => {
+            console.log('onProgress', uploaded, total);
+        }, (messageUid, timestamp) => {
+            console.log('onSuccess', messageUid, timestamp);
+        }, (err) => {
+            console.log('onFail', err);
+        });
+
+    },
+
     obj2html: (data) => {
       return hanabi(
         stringifyObject(data, {
           indent: "  ",
         })
       );
-    },
-    interpreter(e) {
-      //做一些操作,拦截事件等等
-      //开发时建议使用ts写清楚type,使用中间件模式做拦截
-      e.tags = [];
-      if (e.data[0] === "onConnectionStatusChange")
-        e.tags.push(ConnectionStatus[e.data[1]]);
-      return e;
     },
     time(timestamp) {
       var date = new Date(timestamp);

@@ -15,9 +15,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cn.wildfirechat.client.ConnectionStatus;
 import cn.wildfirechat.client.NotInitializedExecption;
 import cn.wildfirechat.remote.ChatManager;
 import io.dcloud.feature.uniapp.UniAppHookProxy;
@@ -107,15 +109,23 @@ class WildfireListenerHandler implements InvocationHandler {
     @RequiresApi(Build.VERSION_CODES.O)
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        String methodName = method.getName();
+        int status = ChatManager.Instance().getConnectionStatus();
+        if ("onReceiveMessage".equals(methodName) && status == ConnectionStatus.ConnectionStatusReceiveing) {
+            List list = (List) args[0];
+            if (list.size() > 100) {
+                return null;
+            }
+        }
         JSONArray array = new JSONArray();
-        array.add(method.getName());
+        array.add(methodName);
         if (args != null)
             for (Object e : args) {
                 array.add(JSONObject.toJSONString(e, ClientUniAppHookProxy.serializeConfig));
             }
 
         if (ClientModule.uniSDKInstance != null) {
-            Log.d(TAG, MessageFormat.format("事件[{0}]:{1}", method.getName(), array.toJSONString()));
+            Log.d(TAG, MessageFormat.format("事件[{0}]:{1}", methodName, array.toJSONString()));
             JSONObject object = new JSONObject();
             object.put("args", array);
             object.put("timestamp", System.currentTimeMillis());
