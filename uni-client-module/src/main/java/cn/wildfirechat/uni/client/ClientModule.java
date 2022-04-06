@@ -1,6 +1,7 @@
 package cn.wildfirechat.uni.client;
 
 import android.app.Activity;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSONArray;
@@ -15,12 +16,15 @@ import cn.wildfirechat.message.Message;
 import cn.wildfirechat.message.MessageContent;
 import cn.wildfirechat.message.core.MessagePayload;
 import cn.wildfirechat.model.Conversation;
+import cn.wildfirechat.model.Friend;
 import cn.wildfirechat.model.FriendRequest;
+import cn.wildfirechat.model.GroupInfo;
 import cn.wildfirechat.model.GroupSearchResult;
 import cn.wildfirechat.model.Socks5ProxyInfo;
 import cn.wildfirechat.model.UserInfo;
 import cn.wildfirechat.remote.ChatManager;
 import cn.wildfirechat.remote.GeneralCallback;
+import cn.wildfirechat.remote.GeneralCallback2;
 import cn.wildfirechat.remote.GetOneRemoteMessageCallback;
 import cn.wildfirechat.remote.GetRemoteMessageCallback;
 import cn.wildfirechat.remote.GetUserInfoCallback;
@@ -82,8 +86,8 @@ public class ClientModule extends UniModule {
     @UniJSMethod(uiThread = true)
     public void sendMessage(String strConv, String strCont, List<String> toUsers, int expireDuration, JSCallback preparedCB, JSCallback progressCB, JSCallback successCB, JSCallback failCB) {
         Log.d(TAG, "sendMessage " + strCont + " " + strCont + " " + toUsers + " " + expireDuration);
-        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
-        MessagePayload messagePayload = JSONObject.parseObject(strCont, MessagePayload.class);
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        MessagePayload messagePayload = parseObject(strCont, MessagePayload.class);
         MessageContent messageContent = ChatManager.Instance().messageContentFromPayload(messagePayload, ChatManager.Instance().getUserId());
         ChatManager.Instance().sendMessage(conversation, messageContent, toUsers.toArray(new String[0]), expireDuration, new SendMessageCallback() {
             @Override
@@ -297,21 +301,7 @@ public class ClientModule extends UniModule {
 
     @UniJSMethod(uiThread = true)
     public void setFavUser(String userId, boolean fav, JSCallback successCB, JSCallback failCB) {
-        ChatManager.Instance().setFavUser(userId, fav, new GeneralCallback() {
-            @Override
-            public void onSuccess() {
-                if (successCB != null) {
-                    successCB.invoke(null);
-                }
-            }
-
-            @Override
-            public void onFail(int errorCode) {
-                if (failCB != null) {
-                    failCB.invoke(errorCode);
-                }
-            }
-        });
+        ChatManager.Instance().setFavUser(userId, fav, new JSGeneralCallback(successCB, failCB));
     }
 
     @UniJSMethod(uiThread = true)
@@ -356,8 +346,130 @@ public class ClientModule extends UniModule {
     }
 
     @UniJSMethod(uiThread = false)
-    public int getUnreadFriendRequestStatus(){
+    public int getUnreadFriendRequestStatus() {
         return ChatManager.Instance().getUnreadFriendRequestStatus();
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void clearUnreadFriendRequestStatus() {
+        ChatManager.Instance().clearUnreadFriendRequestStatus();
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void deleteFriend(String userId, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().deleteFriend(userId, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void handleFriendRequest(String userId, boolean accept, String extra, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().handleFriendRequest(userId, accept, extra, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public boolean isBlackListed(String userId) {
+        return ChatManager.Instance().isBlackListed(userId);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getBlackList() {
+        List<String> list = ChatManager.Instance().getBlackList(false);
+        return JSONObject.toJSONString(list, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void setBlackList(String userId, boolean block, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().setBlackList(userId, block, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getMyFriendList(boolean refresh) {
+        List<String> list = ChatManager.Instance().getMyFriendList(refresh);
+        return JSONObject.toJSONString(list, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getFriendList(boolean refresh) {
+        List<Friend> list = ChatManager.Instance().getFriendList(refresh);
+        return JSONObject.toJSONString(list, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getFriendAlias(String userId) {
+        return ChatManager.Instance().getFriendAlias(userId);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void setFriendAlias(String userId, String alias, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().setFriendAlias(userId, alias, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void createGroup(String groupId, int type, String name, String portrait, String groupExtra, List<String> memberIds, String memberExtra, List<Integer> lines, String strNotifyMsgContent, JSCallback successCB, JSCallback failCB) {
+        GroupInfo.GroupType groupType = GroupInfo.GroupType.type(type);
+        MessagePayload messagePayload = parseObject(strNotifyMsgContent, MessagePayload.class);
+        MessageContent messageContent = null;
+        if (messagePayload != null) {
+            messageContent = ChatManager.Instance().messageContentFromPayload(messagePayload, ChatManager.Instance().getUserId());
+        }
+        ChatManager.Instance().createGroup(groupId, name, portrait, groupType, groupExtra, memberIds, memberExtra, lines, messageContent, new JSGeneralCallback2(successCB, failCB));
+    }
+
+
+    private static class JSGeneralCallback implements GeneralCallback {
+
+        private JSCallback successCB = null;
+        private JSCallback failCB = null;
+
+        public JSGeneralCallback(JSCallback successCB, JSCallback failCB) {
+            this.successCB = successCB;
+            this.failCB = failCB;
+        }
+
+        @Override
+        public void onSuccess() {
+            if (successCB != null) {
+                successCB.invoke(null);
+            }
+        }
+
+        @Override
+        public void onFail(int errorCode) {
+            if (failCB != null) {
+                failCB.invoke(errorCode);
+            }
+        }
+    }
+
+    private static class JSGeneralCallback2 implements GeneralCallback2 {
+
+        private JSCallback successCB = null;
+        private JSCallback failCB = null;
+
+        public JSGeneralCallback2(JSCallback successCB, JSCallback failCB) {
+            this.successCB = successCB;
+            this.failCB = failCB;
+        }
+
+        @Override
+        public void onSuccess(String result) {
+            if (successCB != null) {
+                successCB.invoke(result);
+            }
+        }
+
+        @Override
+        public void onFail(int errorCode) {
+            if (failCB != null) {
+                failCB.invoke(errorCode);
+            }
+        }
+    }
+
+    static <T> T parseObject(String text, Class<T> clazz) {
+        if (text == null || TextUtils.isEmpty(text) || "\"\"".equals(text)) {
+            return null;
+        }
+        return JSONObject.parseObject(text, clazz);
     }
 
 }

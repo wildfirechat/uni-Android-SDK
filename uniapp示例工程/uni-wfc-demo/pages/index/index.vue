@@ -4,6 +4,7 @@
 	<button @click="connect">连接</button>
 	<button @click="getClientId">getClientId</button>
 	<button @click="sendMessage">发送消息</button>
+	<button @click="createGroup"> 创建群组</button>
   </div>
 </template>
 
@@ -13,18 +14,6 @@ import stringifyObject from "common/stringify-object";
 import wfc from '../../wfc/client/wfc.js'
 import Conversation from '../../wfc/model/conversation.js';
 import TextMessageContent from '../../wfc/messages/textMessageContent'
-
-var ConnectionStatus = {
-  "-6": " SecretKey 不匹配",
-  "-5": " 令牌不正确",
-  "-4": " 服务器关闭",
-  "-3": " 连接被拒绝",
-  "-2": " 退出登录",
-  "-1": " 未连接",
-  0: "连接中",
-  1: "连接成功",
-  2: "连接状态接收中",
-};
 
 export default {
   data() {
@@ -54,7 +43,8 @@ export default {
   methods: {
     connect: () => {
 		let userId = '8Smy8ypp';
-		let token = "GyJLg063g1j5AgNfVMLU2CnBK1Q9bzbcqfMSjHedXxMEAinIAAbYJ39R/pK1tW7/P4sjt//q5lVNIkMvQqmN5rHUSlk1eFsvKfyaKN4bk1EbAE2h0nDxrPj3jGfdzrlkRCZhk5exV/XJPPwihyXy+akE/VU331auH5zmr+JNh5g=";		wfc.connect(userId, token );
+		let token = "E13pRXWlp/lNl+9tKwIY5AH82iZIOqlLh5ZJsxZwL6e356dq48CEhTRzS4OkynoI5ad+GuA7E8SaiScP19w807L70UHTzVJxXJOjPzH6lwO9zJ+I3600C0gJjWBO4KOyEvhZQ9XwvrTQDJOytP8+hV8Hk5M4DuFnEPSYCAHRa9c="
+        wfc.connect(userId, token);
     },
 
     getClientId(){
@@ -73,6 +63,15 @@ export default {
             console.log('onSuccess', messageUid, timestamp);
         }, (err) => {
             console.log('onFail', err);
+        });
+    },
+
+    createGroup(){
+        wfc.createGroup(null, 1, 'uni-test-group', null, null, ['uiuJuJcc', 'FireRobot'], null, [0], null, (groupId) => {
+            console.log('createGroup id', groupId);
+        }, (err) => {
+            console.log('create group error', err);
+
         });
 
     },
