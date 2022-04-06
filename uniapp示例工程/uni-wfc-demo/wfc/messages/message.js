@@ -70,8 +70,8 @@ export default class Message {
         if (!obj.conversation.target) {
             return null;
         }
-        // osx or windows
-        if (Config.getWFCPlatform() === 3 || Config.getWFCPlatform() === 4) {
+        // iOS，Android，Windows，OSX
+        if ([1, 2, 3, 4].indexOf(Config.getWFCPlatform())) {
             let msg = Object.assign(new Message(), obj);
             // big integer to number
             msg.messageId = Number(msg.messageId);

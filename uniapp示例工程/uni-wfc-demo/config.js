@@ -14,7 +14,7 @@ export default class Config {
     // 上线建议使用https，使用https更安全。
     //static APP_SERVER = 'http://app.wildfirechat.net:8888';
     static APP_SERVER = 'https://app.wildfirechat.net';
-	
+
 	static IM_SERVER_HOST = 'wildfirechat.net';
 
     static QR_CODE_PREFIX_PC_SESSION = "wildfirechat://pcsession/";
@@ -38,6 +38,11 @@ export default class Config {
      * 允许重新编辑多长时间内的撤回消息，单位是秒
      */
     static RECALL_REEDIT_TIME_LIMIT = 60;
+
+    static getWFCPlatform() {
+        let p = uni.getSystemInfoSync().platform;
+        return p === 'android' ? 2 : 1;
+    }
 
 
     static config(options) {

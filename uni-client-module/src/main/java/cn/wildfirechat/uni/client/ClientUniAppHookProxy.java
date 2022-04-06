@@ -111,6 +111,7 @@ class WildfireListenerHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
         int status = ChatManager.Instance().getConnectionStatus();
+        // 回调 js 层时，好像有大小限制，先规避一下
         if ("onReceiveMessage".equals(methodName) && status == ConnectionStatus.ConnectionStatusReceiveing) {
             List list = (List) args[0];
             if (list.size() > 100) {
