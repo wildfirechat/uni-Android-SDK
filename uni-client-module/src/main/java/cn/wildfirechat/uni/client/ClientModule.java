@@ -1,7 +1,6 @@
 package cn.wildfirechat.uni.client;
 
 import android.app.Activity;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSONArray;
@@ -19,12 +18,16 @@ import cn.wildfirechat.model.Conversation;
 import cn.wildfirechat.model.Friend;
 import cn.wildfirechat.model.FriendRequest;
 import cn.wildfirechat.model.GroupInfo;
+import cn.wildfirechat.model.GroupMember;
 import cn.wildfirechat.model.GroupSearchResult;
+import cn.wildfirechat.model.ModifyGroupInfoType;
 import cn.wildfirechat.model.Socks5ProxyInfo;
 import cn.wildfirechat.model.UserInfo;
 import cn.wildfirechat.remote.ChatManager;
 import cn.wildfirechat.remote.GeneralCallback;
 import cn.wildfirechat.remote.GeneralCallback2;
+import cn.wildfirechat.remote.GetGroupInfoCallback;
+import cn.wildfirechat.remote.GetGroupMembersCallback;
 import cn.wildfirechat.remote.GetOneRemoteMessageCallback;
 import cn.wildfirechat.remote.GetRemoteMessageCallback;
 import cn.wildfirechat.remote.GetUserInfoCallback;
@@ -33,7 +36,6 @@ import cn.wildfirechat.remote.SendMessageCallback;
 import cn.wildfirechat.remote.UserSettingScope;
 import io.dcloud.feature.uniapp.AbsSDKInstance;
 import io.dcloud.feature.uniapp.annotation.UniJSMethod;
-import io.dcloud.feature.uniapp.bridge.UniJSCallback;
 import io.dcloud.feature.uniapp.common.UniModule;
 
 /**
@@ -46,12 +48,12 @@ import io.dcloud.feature.uniapp.common.UniModule;
  */
 public class ClientModule extends UniModule {
 
-    private UniJSCallback connectStatusListener;
-
 
     private static final String TAG = "WfcClientModule";
     static AbsSDKInstance uniSDKInstance;
 
+    private String userId;
+    private String token;
 
     // 不知道为啥，未触发
     @Override
@@ -70,13 +72,10 @@ public class ClientModule extends UniModule {
         ClientModule.uniSDKInstance = mUniSDKInstance;
     }
 
-    @UniJSMethod
-    public void setOnConnectStatusListener(UniJSCallback callback) {
-        this.connectStatusListener = callback;
-    }
-
     @UniJSMethod(uiThread = false)
     public void connect(String imServerHost, String userId, String token) {
+        this.userId = userId;
+        this.token = token;
         if (mUniSDKInstance.getContext() instanceof Activity) {
             ChatManager.Instance().setIMServerHost(imServerHost);
             ChatManager.Instance().connect(userId, token);
@@ -84,11 +83,10 @@ public class ClientModule extends UniModule {
     }
 
     @UniJSMethod(uiThread = true)
-    public void sendMessage(String strConv, String strCont, List<String> toUsers, int expireDuration, JSCallback preparedCB, JSCallback progressCB, JSCallback successCB, JSCallback failCB) {
-        Log.d(TAG, "sendMessage " + strCont + " " + strCont + " " + toUsers + " " + expireDuration);
+    public void sendMessage(String strConv, String messagePayloadString, List<String> toUsers, int expireDuration, JSCallback preparedCB, JSCallback progressCB, JSCallback successCB, JSCallback failCB) {
+        Log.d(TAG, "sendMessage " + messagePayloadString + " " + messagePayloadString + " " + toUsers + " " + expireDuration);
         Conversation conversation = parseObject(strConv, Conversation.class);
-        MessagePayload messagePayload = parseObject(strCont, MessagePayload.class);
-        MessageContent messageContent = ChatManager.Instance().messageContentFromPayload(messagePayload, ChatManager.Instance().getUserId());
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
         ChatManager.Instance().sendMessage(conversation, messageContent, toUsers.toArray(new String[0]), expireDuration, new SendMessageCallback() {
             @Override
             public void onSuccess(long messageUid, long timestamp) {
@@ -404,16 +402,164 @@ public class ClientModule extends UniModule {
     }
 
     @UniJSMethod(uiThread = true)
-    public void createGroup(String groupId, int type, String name, String portrait, String groupExtra, List<String> memberIds, String memberExtra, List<Integer> lines, String strNotifyMsgContent, JSCallback successCB, JSCallback failCB) {
+    public void createGroup(String groupId, int type, String name, String portrait, String groupExtra, List<String> memberIds, String memberExtra, List<Integer> lines, String messagePayloadString, JSCallback successCB, JSCallback failCB) {
         GroupInfo.GroupType groupType = GroupInfo.GroupType.type(type);
-        MessagePayload messagePayload = parseObject(strNotifyMsgContent, MessagePayload.class);
-        MessageContent messageContent = null;
-        if (messagePayload != null) {
-            messageContent = ChatManager.Instance().messageContentFromPayload(messagePayload, ChatManager.Instance().getUserId());
-        }
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
         ChatManager.Instance().createGroup(groupId, name, portrait, groupType, groupExtra, memberIds, memberExtra, lines, messageContent, new JSGeneralCallback2(successCB, failCB));
     }
 
+    @UniJSMethod(uiThread = true)
+    public void setGroupManager(String groupId, boolean isSet, List<String> memberIds, List<Integer> lines, String messagePayloadStr, JSCallback successCB, JSCallback failCB) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadStr);
+        ChatManager.Instance().setGroupManager(groupId, isSet, memberIds, lines, messageContent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void allowGroupMember(String groupId, boolean isSet, List<String> memberIds, List<Integer> lines, String messagePayloadString, JSCallback successCB, JSCallback failCB) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
+        ChatManager.Instance().allowGroupMember(groupId, isSet, memberIds, lines, messageContent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void muteGroupMember(String groupId, boolean isSet, List<String> memberIds, List<Integer> lines, String messagePayloadString, JSCallback successCB, JSCallback failCB) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
+        ChatManager.Instance().muteGroupMember(groupId, isSet, memberIds, lines, messageContent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getGroupInfo(String groupId, boolean refresh) {
+        GroupInfo groupInfo = ChatManager.Instance().getGroupInfo(groupId, refresh);
+        return JSONObject.toJSONString(groupInfo, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void getGroupInfoEx(String groupId, boolean refresh, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().getGroupInfo(groupId, refresh, new GetGroupInfoCallback() {
+            @Override
+            public void onSuccess(GroupInfo groupInfo) {
+                if (successCB != null) {
+                    successCB.invoke(JSONObject.toJSONString(groupInfo, ClientUniAppHookProxy.serializeConfig));
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                if (failCB != null) {
+                    failCB.invoke(errorCode);
+                }
+            }
+        });
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void addMembers(String groupId, List<String> memberIds, String extra, List<Integer> lines, String messagePayloadString, JSCallback successCB, JSCallback failCB) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
+        ChatManager.Instance().addGroupMembers(groupId, memberIds, extra, lines, messageContent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getGroupMembers(String groupId, boolean refresh) {
+        List<GroupMember> groupMembers = ChatManager.Instance().getGroupMembers(groupId, refresh);
+        return JSONObject.toJSONString(groupMembers, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getGroupMember(String groupId, String memberId) {
+        GroupMember groupMember = ChatManager.Instance().getGroupMember(groupId, memberId);
+        return JSONObject.toJSONString(groupMember, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void getGroupMembersEx(String groupId, boolean refresh, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().getGroupMembers(groupId, refresh, new GetGroupMembersCallback() {
+            @Override
+            public void onSuccess(List<GroupMember> groupMembers) {
+                if (successCB != null) {
+                    successCB.invoke(JSONObject.toJSONString(groupMembers, ClientUniAppHookProxy.serializeConfig));
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                if (failCB != null) {
+                    failCB.invoke(errorCode);
+                }
+            }
+        });
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void kickoffMembers(String groupId, List<String> memberIds, List<Integer> lines, String messagePayloadString, JSCallback successCB, JSCallback failCB) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
+        ChatManager.Instance().removeGroupMembers(groupId, memberIds, lines, messageContent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void quitGroup(String groupId, List<Integer> lines, String messagePayloadString, JSCallback successCB, JSCallback failCB) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
+        ChatManager.Instance().quitGroup(groupId, lines, messageContent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void dismissGroup(String groupId, List<Integer> lines, String messagePayloadString, JSCallback successCB, JSCallback failCB) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
+        ChatManager.Instance().dismissGroup(groupId, lines, messageContent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void modifyGroupInfo(String groupId, int type, String newValue, List<Integer> lines, String messagePayloadString, JSCallback successCB, JSCallback failCB) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
+        ModifyGroupInfoType modifyGroupInfoType = ModifyGroupInfoType.type(type);
+        ChatManager.Instance().modifyGroupInfo(groupId, modifyGroupInfoType, newValue, lines, messageContent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void modifyGroupAlias(String groupId, String alias, List<Integer> lines, String messagePayloadString, JSCallback successCB, JSCallback failCB) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
+        ChatManager.Instance().modifyGroupAlias(groupId, alias, lines, messageContent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void modifyGroupMemberAlias(String groupId, String memberId, String alias, List<Integer> lines, String messagePayloadString, JSCallback successCB, JSCallback failCB) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
+        ChatManager.Instance().modifyGroupMemberAlias(groupId, memberId, alias, lines, messageContent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void modifyGroupMemberExtra(String groupId, String extra, String alias, List<Integer> lines, String messagePayloadString, JSCallback successCB, JSCallback failCB) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
+        ChatManager.Instance().modifyGroupMemberExtra(groupId, extra, alias, lines, messageContent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void transferGroup(String groupId, String newOwner, List<Integer> lines, String messagePayloadString, JSCallback successCB, JSCallback failCB) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
+        ChatManager.Instance().transferGroup(groupId, newOwner, lines, messageContent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getFavGroups() {
+        List<String> favGroupIds = new ArrayList<>();
+        Map<String, String> groupIdMap = ChatManager.Instance().getUserSettings(UserSettingScope.FavoriteGroup);
+        if (groupIdMap != null && !groupIdMap.isEmpty()) {
+            for (Map.Entry<String, String> entry : groupIdMap.entrySet()) {
+                if (entry.getValue().equals("1")) {
+                    favGroupIds.add(entry.getKey());
+                }
+            }
+        }
+        return JSONObject.toJSONString(favGroupIds, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public boolean isFavGroup(String groupId) {
+        return ChatManager.Instance().isFavGroup(groupId);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void setFavGroup(String groupId, boolean fav, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().setFavGroup(groupId, fav, new JSGeneralCallback(successCB, failCB));
+    }
 
     private static class JSGeneralCallback implements GeneralCallback {
 
@@ -465,11 +611,27 @@ public class ClientModule extends UniModule {
         }
     }
 
-    static <T> T parseObject(String text, Class<T> clazz) {
-        if (text == null || TextUtils.isEmpty(text) || "\"\"".equals(text)) {
-            return null;
+    private MessageContent messagePayloadStringToMessageContent(String text) {
+        MessagePayload messagePayload = null;
+        try {
+            messagePayload = JSONObject.parseObject(text, MessagePayload.class);
+        } catch (Exception e) {
+            Log.e(TAG, "parseObject to MessagePayload exception " + text);
         }
-        return JSONObject.parseObject(text, clazz);
+        if (messagePayload != null) {
+            return ChatManager.Instance().messageContentFromPayload(messagePayload, this.userId);
+        }
+        return null;
+    }
+
+
+    static <T> T parseObject(String text, Class<T> clazz) {
+        try {
+            return JSONObject.parseObject(text, clazz);
+        } catch (Exception e) {
+            Log.e(TAG, "parseObject exception " + clazz.getName());
+        }
+        return null;
     }
 
 }
