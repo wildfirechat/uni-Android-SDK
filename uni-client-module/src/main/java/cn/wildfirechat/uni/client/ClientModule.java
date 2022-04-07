@@ -14,23 +14,32 @@ import java.util.Map;
 import cn.wildfirechat.message.Message;
 import cn.wildfirechat.message.MessageContent;
 import cn.wildfirechat.message.core.MessagePayload;
+import cn.wildfirechat.model.ChannelInfo;
+import cn.wildfirechat.model.ChatRoomInfo;
+import cn.wildfirechat.model.ChatRoomMembersInfo;
 import cn.wildfirechat.model.Conversation;
 import cn.wildfirechat.model.Friend;
 import cn.wildfirechat.model.FriendRequest;
 import cn.wildfirechat.model.GroupInfo;
 import cn.wildfirechat.model.GroupMember;
 import cn.wildfirechat.model.GroupSearchResult;
+import cn.wildfirechat.model.ModifyChannelInfoType;
 import cn.wildfirechat.model.ModifyGroupInfoType;
+import cn.wildfirechat.model.ModifyMyInfoEntry;
+import cn.wildfirechat.model.ModifyMyInfoType;
 import cn.wildfirechat.model.Socks5ProxyInfo;
 import cn.wildfirechat.model.UserInfo;
 import cn.wildfirechat.remote.ChatManager;
 import cn.wildfirechat.remote.GeneralCallback;
 import cn.wildfirechat.remote.GeneralCallback2;
+import cn.wildfirechat.remote.GetChatRoomInfoCallback;
+import cn.wildfirechat.remote.GetChatRoomMembersInfoCallback;
 import cn.wildfirechat.remote.GetGroupInfoCallback;
 import cn.wildfirechat.remote.GetGroupMembersCallback;
 import cn.wildfirechat.remote.GetOneRemoteMessageCallback;
 import cn.wildfirechat.remote.GetRemoteMessageCallback;
 import cn.wildfirechat.remote.GetUserInfoCallback;
+import cn.wildfirechat.remote.SearchChannelCallback;
 import cn.wildfirechat.remote.SearchUserCallback;
 import cn.wildfirechat.remote.SendMessageCallback;
 import cn.wildfirechat.remote.UserSettingScope;
@@ -561,9 +570,176 @@ public class ClientModule extends UniModule {
         ChatManager.Instance().setFavGroup(groupId, fav, new JSGeneralCallback(successCB, failCB));
     }
 
-    @UniJSMethod(uiThread = true)
+    @UniJSMethod(uiThread = false)
     public String getUserSetting(int scope, String key) {
         return ChatManager.Instance().getUserSetting(scope, key);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getUserSettings(int scope) {
+        Map<String, String> settings = ChatManager.Instance().getUserSettings(scope);
+        JSONArray array = ClientUniAppHookProxy.strStrMap2Array(settings);
+        return JSONObject.toJSONString(array, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void setUserSetting(int scope, String key, String value, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().setUserSetting(scope, key, value, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void modifyMyInfo(int type, String value, JSCallback successCB, JSCallback failCB) {
+        List<ModifyMyInfoEntry> entries = new ArrayList<>();
+        ModifyMyInfoEntry entry = new ModifyMyInfoEntry(ModifyMyInfoType.type(type), value);
+        entries.add(entry);
+        ChatManager.Instance().modifyMyInfo(entries, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public boolean isGlobalSlient() {
+        return ChatManager.Instance().isGlobalSilent();
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void setGlobalSlient(boolean silent, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().setGlobalSilent(silent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public boolean isHiddenNotificationDetail() {
+        return ChatManager.Instance().isHiddenNotificationDetail();
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void setHiddenNotificationDetail(boolean hide, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().setHiddenNotificationDetail(hide, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public boolean isHiddenGroupMemberName(String groupId) {
+        // TODO
+        return false;
+    }
+
+    @UniJSMethod(uiThread = false)
+    public boolean isUserReceiptEnabled() {
+        return ChatManager.Instance().isUserEnableReceipt();
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void setUserReceiptEnable(boolean enable, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().setUserEnableReceipt(enable, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void joinChatroom(String chatroomId, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().joinChatRoom(chatroomId, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void quitChatroom(String chatroomId, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().quitChatRoom(chatroomId, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void getChatroomInfo(String chatroomId, long updateDt, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().getChatRoomInfo(chatroomId, updateDt, new GetChatRoomInfoCallback() {
+            @Override
+            public void onSuccess(ChatRoomInfo chatRoomInfo) {
+                if (successCB != null) {
+                    successCB.invoke(JSONObject.toJSONString(chatRoomInfo, ClientUniAppHookProxy.serializeConfig));
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                if (failCB != null) {
+                    failCB.invoke(errorCode);
+                }
+            }
+        });
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void getChatroomMemberInfo(String chatroomId, int maxCount, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().getChatRoomMembersInfo(chatroomId, maxCount, new GetChatRoomMembersInfoCallback() {
+            @Override
+            public void onSuccess(ChatRoomMembersInfo chatRoomMembersInfo) {
+                if (successCB != null) {
+                    successCB.invoke(JSONObject.toJSONString(chatRoomMembersInfo, ClientUniAppHookProxy.serializeConfig));
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                if (failCB != null) {
+                    failCB.invoke(errorCode);
+                }
+            }
+        });
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void createChannel(String name, String portrait, int status, String desc, String extra, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().createChannel(null, name, portrait, desc, extra, new JSGeneralCallback2(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getChannelInfo(String channelId, boolean refresh) {
+        ChannelInfo channelInfo = ChatManager.Instance().getChannelInfo(channelId, refresh);
+        return JSONObject.toJSONString(channelInfo, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void modifyChannelInfo(String channelId, int type, String newValue, JSCallback successCB, JSCallback failCB) {
+        ModifyChannelInfoType modifyChannelInfoType = ModifyChannelInfoType.type(type);
+        ChatManager.Instance().modifyChannelInfo(channelId, modifyChannelInfoType, newValue, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void searchChannel(String keyword, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().searchChannel(keyword, new SearchChannelCallback() {
+            @Override
+            public void onSuccess(List<ChannelInfo> channelInfos) {
+                if (successCB != null) {
+                    successCB.invoke(JSONObject.toJSONString(channelInfos, ClientUniAppHookProxy.serializeConfig));
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                if (failCB != null) {
+                    failCB.invoke(errorCode);
+                }
+            }
+        });
+    }
+
+    @UniJSMethod(uiThread = false)
+    public boolean isListenedChannel(String channelId) {
+        return ChatManager.Instance().isListenedChannel(channelId);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void listenChannel(String channelId, boolean listen, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().listenChannel(channelId, listen, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getMyChannels() {
+        List<String> channelIds = ChatManager.Instance().getMyChannels();
+        return JSONObject.toJSONString(channelIds, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getListenedChannels() {
+        List<String> channelIds = ChatManager.Instance().getListenedChannels();
+        return JSONObject.toJSONString(channelIds, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void destoryChannel(String channelId, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().destoryChannel(channelId, new JSGeneralCallback(successCB, failCB));
     }
 
     private static class JSGeneralCallback implements GeneralCallback {

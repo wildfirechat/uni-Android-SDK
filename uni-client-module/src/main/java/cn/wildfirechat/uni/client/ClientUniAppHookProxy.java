@@ -95,6 +95,30 @@ public class ClientUniAppHookProxy implements UniAppHookProxy {
         }
         return false;
     }
+
+    static JSONArray strLongMap2Array(Map<String, Long> map) {
+        JSONArray array = new JSONArray();
+        for (Map.Entry<String, Long> entry : map.entrySet()) {
+            JSONObject object = new JSONObject();
+            object.put("key", entry.getKey());
+            object.put("value", entry.getValue());
+            array.add(object);
+        }
+
+        return array;
+    }
+
+    static JSONArray strStrMap2Array(Map<String, String> map) {
+        JSONArray array = new JSONArray();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            JSONObject object = new JSONObject();
+            object.put("key", entry.getKey());
+            object.put("value", entry.getValue());
+            array.add(object);
+        }
+
+        return array;
+    }
 }
 
 class WildfireListenerHandler implements InvocationHandler {
@@ -125,7 +149,7 @@ class WildfireListenerHandler implements InvocationHandler {
 
             switch (methodName) {
                 case "onMessageDelivered":
-                    array.add(strLongMap2Array((Map<String, Long>) args[0]));
+                    array.add(ClientUniAppHookProxy.strLongMap2Array((Map<String, Long>) args[0]));
                     break;
                 default:
                     for (Object e : args) {
@@ -144,30 +168,6 @@ class WildfireListenerHandler implements InvocationHandler {
             ClientModule.uniSDKInstance.fireGlobalEventCallback("wfc-event", object);
         }
         return null;
-    }
-
-    static JSONArray strLongMap2Array(Map<String, Long> map) {
-        JSONArray array = new JSONArray();
-        for (Map.Entry<String, Long> entry : map.entrySet()) {
-            JSONObject object = new JSONObject();
-            object.put("key", entry.getKey());
-            object.put("value", entry.getValue());
-            array.add(object);
-        }
-
-        return array;
-    }
-
-    static JSONArray strStrMap2Array(Map<String, String> map) {
-        JSONArray array = new JSONArray();
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            JSONObject object = new JSONObject();
-            object.put("key", entry.getKey());
-            object.put("value", entry.getValue());
-            array.add(object);
-        }
-
-        return array;
     }
 }
 
