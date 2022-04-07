@@ -49,17 +49,18 @@
             }
         },
         "nativePlugins" : {
-            "uni-wfc" : {
+            "uni-wfc-client" : {
                 "__plugin_info__" : {
-                    "name" : "基于野火im的即时通讯SDK",
-                    "description" : "基于野火im的即时通讯SDK",
+                    "name" : "野火IM SDK",
+                    "description" : "野火IM Android 原生插件",
                     "platforms" : "Android",
-                    "url" : "https://ext.dcloud.net.cn/plugin?id=4547",
-                    "android_package_name" : "uni.UNI7CB709D",
+                    "url" : "",
+                    "android_package_name" : "cn.wildfirechat.uni.demo",
                     "ios_bundle_id" : "",
-                    "isCloud" : true,
-                    "bought" : 1,
-                    "pid" : "4547"
+                    "isCloud" : false,
+                    "bought" : -1,
+                    "pid" : "",
+                    "parameters" : {}
                 }
             }
         }

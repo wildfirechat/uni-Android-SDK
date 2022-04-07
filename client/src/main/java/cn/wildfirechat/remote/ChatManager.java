@@ -178,6 +178,8 @@ public class ChatManager {
     private Handler mainHandler;
     private Handler workHandler;
     private String deviceToken;
+    // just for debug
+    //private String clientId = "b67297dba73328c81649202324460";
     private String clientId = null;
     private int pushType;
     private Map<Integer, Class<? extends MessageContent>> messageContentMap = new HashMap<>();

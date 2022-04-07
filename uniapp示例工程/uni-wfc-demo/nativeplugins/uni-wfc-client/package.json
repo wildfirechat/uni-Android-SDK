@@ -1,0 +1,29 @@
+{
+    "name": "野火IM SDK",
+    "id": "uni-wfc-client",
+    "version": "0.1.0",
+    "description": "野火IM Android 原生插件",
+    "_dp_type": "nativeplugin",
+    "_dp_nativeplugin": {
+        "android": {
+            "plugins": [
+                {
+                    "type": "module",
+                    "name": "uni-wfc-client",
+                    "class": "cn.wildfirechat.uni.client.ClientModule"
+                }
+            ],
+            "hooksClass": "cn.wildfirechat.uni.client.ClientUniAppHookProxy",
+            "integrateType": "aar",
+            "dependencies": [
+                "androidx.lifecycle:lifecycle-extensions:2.2.0"
+            ],
+            "minSdkVersion": 21,
+            "compileOptions": {
+                "sourceCompatibility": "1.8",
+                "targetCompatibility": "1.8"
+            },
+            "useAndroidX": true
+        }
+    }
+}
