@@ -1,6 +1,7 @@
 package cn.wildfirechat.uni.client;
 
 import android.app.Activity;
+import android.util.Base64;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSONArray;
@@ -14,13 +15,16 @@ import java.util.concurrent.CountDownLatch;
 
 import cn.wildfirechat.message.Message;
 import cn.wildfirechat.message.MessageContent;
+import cn.wildfirechat.message.MessageContentMediaType;
 import cn.wildfirechat.message.core.MessagePayload;
+import cn.wildfirechat.message.core.MessageStatus;
 import cn.wildfirechat.model.ChannelInfo;
 import cn.wildfirechat.model.ChatRoomInfo;
 import cn.wildfirechat.model.ChatRoomMembersInfo;
 import cn.wildfirechat.model.Conversation;
 import cn.wildfirechat.model.ConversationInfo;
 import cn.wildfirechat.model.ConversationSearchResult;
+import cn.wildfirechat.model.FileRecord;
 import cn.wildfirechat.model.Friend;
 import cn.wildfirechat.model.FriendRequest;
 import cn.wildfirechat.model.GroupInfo;
@@ -36,13 +40,16 @@ import cn.wildfirechat.model.UserInfo;
 import cn.wildfirechat.remote.ChatManager;
 import cn.wildfirechat.remote.GeneralCallback;
 import cn.wildfirechat.remote.GeneralCallback2;
+import cn.wildfirechat.remote.GetAuthorizedMediaUrlCallback;
 import cn.wildfirechat.remote.GetChatRoomInfoCallback;
 import cn.wildfirechat.remote.GetChatRoomMembersInfoCallback;
+import cn.wildfirechat.remote.GetFileRecordCallback;
 import cn.wildfirechat.remote.GetGroupInfoCallback;
 import cn.wildfirechat.remote.GetGroupMembersCallback;
 import cn.wildfirechat.remote.GetMessageCallback;
 import cn.wildfirechat.remote.GetOneRemoteMessageCallback;
 import cn.wildfirechat.remote.GetRemoteMessageCallback;
+import cn.wildfirechat.remote.GetUploadUrlCallback;
 import cn.wildfirechat.remote.GetUserInfoCallback;
 import cn.wildfirechat.remote.SearchChannelCallback;
 import cn.wildfirechat.remote.SearchUserCallback;
@@ -96,50 +103,6 @@ public class ClientModule extends UniModule {
         }
     }
 
-    @UniJSMethod(uiThread = true)
-    public void sendMessage(String strConv, String messagePayloadString, List<String> toUsers, int expireDuration, JSCallback preparedCB, JSCallback progressCB, JSCallback successCB, JSCallback failCB) {
-        Log.d(TAG, "sendMessage " + messagePayloadString + " " + messagePayloadString + " " + toUsers + " " + expireDuration);
-        Conversation conversation = parseObject(strConv, Conversation.class);
-        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
-        ChatManager.Instance().sendMessage(conversation, messageContent, toUsers.toArray(new String[0]), expireDuration, new SendMessageCallback() {
-            @Override
-            public void onSuccess(long messageUid, long timestamp) {
-                if (successCB != null) {
-                    JSONArray array = new JSONArray();
-                    array.add(messageUid + "");
-                    array.add(timestamp);
-                    successCB.invoke(array);
-                }
-            }
-
-            @Override
-            public void onFail(int errorCode) {
-                if (failCB != null) {
-                    failCB.invoke(errorCode);
-                }
-            }
-
-            @Override
-            public void onPrepare(long messageId, long savedTime) {
-                if (preparedCB != null) {
-                    JSONArray array = new JSONArray();
-                    array.add(messageId);
-                    array.add(savedTime);
-                    preparedCB.invoke(array);
-                }
-            }
-
-            @Override
-            public void onProgress(long uploaded, long total) {
-                if (progressCB != null) {
-                    JSONArray array = new JSONArray();
-                    array.add(uploaded);
-                    array.add(total);
-                    progressCB.invokeAndKeepAlive(array);
-                }
-            }
-        });
-    }
 
     // ui 线程的方法异步执行
     // 非 ui 线程的方法同步执行
@@ -311,7 +274,7 @@ public class ClientModule extends UniModule {
 
     @UniJSMethod(uiThread = true)
     public void getRemoteMessages(String strConv, String beforeUid, int count, JSCallback successCB, JSCallback failCB) {
-        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+        Conversation conversation = parseObject(strConv, Conversation.class);
         ChatManager.Instance().getRemoteMessages(conversation, null, Long.parseLong(beforeUid), count, new GetRemoteMessageCallback() {
             @Override
             public void onSuccess(List<Message> messages) {
@@ -822,20 +785,20 @@ public class ClientModule extends UniModule {
 
     @UniJSMethod(uiThread = false)
     public void setLastReceivedMessageUnRead(String strConv, String messageUid, String timestamp) {
-        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+        Conversation conversation = parseObject(strConv, Conversation.class);
         ChatManager.Instance().markAsUnRead(conversation, false);
     }
 
     @UniJSMethod(uiThread = false)
     public String getConversationRead(String strConv) {
-        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+        Conversation conversation = parseObject(strConv, Conversation.class);
         Map<String, Long> conversationRead = ChatManager.Instance().getConversationRead(conversation);
         return JSONObject.toJSONString(ClientUniAppHookProxy.strLongMap2Array(conversationRead), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)
     public String getMessageDelivery(String strConv) {
-        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+        Conversation conversation = parseObject(strConv, Conversation.class);
         Map<String, Long> messageDelivery = ChatManager.Instance().getMessageDelivery(conversation);
         return JSONObject.toJSONString(ClientUniAppHookProxy.strLongMap2Array(messageDelivery), ClientUniAppHookProxy.serializeConfig);
     }
@@ -847,7 +810,7 @@ public class ClientModule extends UniModule {
 
     @UniJSMethod(uiThread = false)
     public Long getConversationFirstUnreadMessageId(String strConv) {
-        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+        Conversation conversation = parseObject(strConv, Conversation.class);
         return ChatManager.Instance().getFirstUnreadMessageId(conversation);
     }
 
@@ -873,7 +836,7 @@ public class ClientModule extends UniModule {
 
     @UniJSMethod(uiThread = false)
     public String getMessages(String strConv, List<Integer> types, int fromIndex, boolean before, int count, String withUser) {
-        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+        Conversation conversation = parseObject(strConv, Conversation.class);
         CountDownLatch latch = new CountDownLatch(1);
 
         List<Message> messageList = new ArrayList<>();
@@ -933,7 +896,7 @@ public class ClientModule extends UniModule {
 
     @UniJSMethod(uiThread = false)
     public String getUserMessages(String userId, String strConv, List<Integer> types, int fromIndex, boolean before, int count) {
-        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+        Conversation conversation = parseObject(strConv, Conversation.class);
 
         CountDownLatch latch = new CountDownLatch(1);
 
@@ -952,6 +915,11 @@ public class ClientModule extends UniModule {
                 latch.countDown();
             }
         });
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
     }
 
@@ -963,7 +931,6 @@ public class ClientModule extends UniModule {
         }
 
         CountDownLatch latch = new CountDownLatch(1);
-
         List<Message> messageList = new ArrayList<>();
         ChatManager.Instance().getUserMessagesEx(userId, conversationTypes, lines, types, fromIndex, before, count, new GetMessageCallback() {
             @Override
@@ -979,7 +946,320 @@ public class ClientModule extends UniModule {
                 latch.countDown();
             }
         });
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getMessage(long messageId) {
+        Message message = ChatManager.Instance().getMessage(messageId);
+        return JSONObject.toJSONString(message, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getMessageByUid(String messageUid) {
+        Message message = ChatManager.Instance().getMessageByUid(Long.parseLong(messageUid));
+        return JSONObject.toJSONString(message, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String searchMessage(String strConv, String keyword) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        List<Message> messageList = ChatManager.Instance().searchMessage(conversation, keyword, false, 500, 0);
+        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String searchMessageEx(String strConv, String keyword, boolean desc, int limit, int offset) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        List<Message> messageList = ChatManager.Instance().searchMessage(conversation, keyword, desc, limit, offset);
+        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String searchMessageByTypes(String strConv, String keyword, List<Integer> contentTypes, boolean desc, int limit, int offset) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        List<Message> messageList = ChatManager.Instance().searchMessageByTypes(conversation, keyword, contentTypes, desc, limit, offset);
+        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String searchMessageByTypesAndTimes(String strConv, String keyword, List<Integer> contentTypes, long startTime, long endTime, boolean desc, int limit, int offset) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        List<Message> messageList = ChatManager.Instance().searchMessageByTypesAndTimes(conversation, keyword, contentTypes, startTime, endTime, desc, limit, offset);
+        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    public String searchMessageEx2(List<Integer> convTypes, List<Integer> lines, List<Integer> contentTypes, String keyword, int fromIndex, boolean desc, int count) {
+
+        List<Conversation.ConversationType> conversationTypes = new ArrayList<>();
+        for (Integer type : convTypes) {
+            conversationTypes.add(Conversation.ConversationType.type(type));
+        }
+        CountDownLatch latch = new CountDownLatch(1);
+        List<Message> messageList = new ArrayList<>();
+        ChatManager.Instance().searchMessagesEx(conversationTypes, lines, contentTypes, keyword, fromIndex, desc, count, new GetMessageCallback() {
+            @Override
+            public void onSuccess(List<Message> messages, boolean hasMore) {
+                messageList.addAll(messages);
+                if (!hasMore) {
+                    latch.countDown();
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                latch.countDown();
+            }
+        });
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void sendMessage(String strConv, String messagePayloadString, List<String> toUsers, int expireDuration, JSCallback preparedCB, JSCallback progressCB, JSCallback successCB, JSCallback failCB) {
+        Log.d(TAG, "sendMessage " + messagePayloadString + " " + messagePayloadString + " " + toUsers + " " + expireDuration);
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayloadString);
+        ChatManager.Instance().sendMessage(conversation, messageContent, toUsers.toArray(new String[0]), expireDuration, new SendMessageCallback() {
+            @Override
+            public void onSuccess(long messageUid, long timestamp) {
+                if (successCB != null) {
+                    JSONArray array = new JSONArray();
+                    array.add(messageUid + "");
+                    array.add(timestamp);
+                    successCB.invoke(array);
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                if (failCB != null) {
+                    failCB.invoke(errorCode);
+                }
+            }
+
+            @Override
+            public void onPrepare(long messageId, long savedTime) {
+                if (preparedCB != null) {
+                    JSONArray array = new JSONArray();
+                    array.add(messageId);
+                    array.add(savedTime);
+                    preparedCB.invoke(array);
+                }
+            }
+
+            @Override
+            public void onProgress(long uploaded, long total) {
+                if (progressCB != null) {
+                    JSONArray array = new JSONArray();
+                    array.add(uploaded);
+                    array.add(total);
+                    progressCB.invokeAndKeepAlive(array);
+                }
+            }
+        });
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void recall(String messageUid, JSCallback successCB, JSCallback failCB) {
+        Message message = ChatManager.Instance().getMessageByUid(Long.parseLong(messageUid));
+        if (message == null) {
+            message = new Message();
+            message.messageUid = Long.parseLong(messageUid);
+        }
+        ChatManager.Instance().recallMessage(message, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void deleteRemoteMessage(String messageUid, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().deleteRemoteMessage(Long.parseLong(messageUid), new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void updateRemoteMessageContent(String messageUid, String messagePayload, boolean distribute, boolean updateLocal, JSCallback successCB, JSCallback failCB) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayload);
+        ChatManager.Instance().updateRemoteMessageContent(Long.parseLong(messageUid), messageContent, distribute, updateLocal, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void deleteMessage(long messageId) {
+        Message message = ChatManager.Instance().getMessage(messageId);
+        if (message == null) {
+            message = new Message();
+            message.messageId = messageId;
+        }
+        ChatManager.Instance().deleteMessage(message);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void watchOnlineState(int convType, List<String> targets, int duration, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().watchOnlineState(convType, targets.toArray(new String[0]), duration, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void unwatchOnlineState(int convType, List<String> targets, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().unWatchOnlineState(convType, targets.toArray(new String[0]), new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public boolean isCommercialServer() {
+        return ChatManager.Instance().isCommercialServer();
+    }
+
+    @UniJSMethod(uiThread = false)
+    public boolean isReceiptEnabled() {
+        return ChatManager.Instance().isReceiptEnabled();
+    }
+
+    @UniJSMethod(uiThread = false)
+    public boolean isGlobalDisableSyncDraft() {
+        return ChatManager.Instance().isGlobalDisableSyncDraft();
+    }
+
+    @UniJSMethod(uiThread = false)
+    public boolean isEnableUserOnlineState() {
+        // fixme
+        return true;
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void getAuthorizedMediaUrl(String messageUid, int mediaType, String mediaPath, JSCallback successCB, JSCallback failCB) {
+        MessageContentMediaType messageContentMediaType = MessageContentMediaType.mediaType(mediaType);
+        ChatManager.Instance().getAuthorizedMediaUrl(Long.parseLong(messageUid), messageContentMediaType, mediaPath, new GetAuthorizedMediaUrlCallback() {
+            @Override
+            public void onSuccess(String url, String backupUrl) {
+                if (successCB != null) {
+                    JSONArray array = new JSONArray();
+                    array.add(url);
+                    array.add(backupUrl);
+                    successCB.invoke(array);
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                if (failCB != null) {
+                    failCB.invoke(errorCode);
+                }
+
+            }
+        });
+    }
+
+    @UniJSMethod(uiThread = false)
+    public boolean isSupportBigFilesUpload() {
+        return ChatManager.Instance().isSupportBigFilesUpload();
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void getUploadMediaUrl(String fileName, int mediaType, String contentType, JSCallback successCB, JSCallback failCB) {
+        MessageContentMediaType messageContentMediaType = MessageContentMediaType.mediaType(mediaType);
+        ChatManager.Instance().getUploadUrl(fileName, messageContentMediaType, contentType, new GetUploadUrlCallback() {
+            @Override
+            public void onSuccess(String uploadUrl, String remoteUrl, String backUploadupUrl, int serverType) {
+                if (successCB != null) {
+                    JSONArray array = new JSONArray();
+                    array.add(uploadUrl);
+                    array.add(remoteUrl);
+                    array.add(backUploadupUrl);
+                    array.add(serverType);
+                    successCB.invoke(array);
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                if (failCB != null) {
+                    failCB.invoke(errorCode);
+                }
+            }
+        });
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void getConversationFiles(String strConv, String fromUser, String beforeUid, int count, JSCallback successCB, JSCallback failCB) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        ChatManager.Instance().getConversationFileRecords(conversation, fromUser, Long.parseLong(beforeUid), count, new JSGetFileRecordCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void getMyFiles(String beforeUid, int count, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().getMyFileRecords(Long.parseLong(beforeUid), count, new JSGetFileRecordCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void deleteFileRecord(String messageUid, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().deleteFileRecord(Long.parseLong(messageUid), new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void clearMessages(String strConv) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        ChatManager.Instance().clearMessages(conversation);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void clearRemoteConversationMessages(String strConv, JSCallback successCB, JSCallback failCB) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        ChatManager.Instance().clearRemoteConversationMessage(conversation, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void clearMessagesByTime(String strConv, long before) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        ChatManager.Instance().clearMessages(conversation, before);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void insertMessage(String strConv, String sender, String strMessagePayload, int status, boolean notify, long serverTime) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        MessageContent messageContent = messagePayloadStringToMessageContent(strMessagePayload);
+        MessageStatus messageStatus = MessageStatus.status(status);
+        ChatManager.Instance().insertMessage(conversation, sender, messageContent, messageStatus, notify, serverTime);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void updateMessage(long messageId, String messagePayload) {
+        MessageContent messageContent = messagePayloadStringToMessageContent(messagePayload);
+        ChatManager.Instance().updateMessage(messageId, messageContent);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void updateMessageStatus(long messageId, int status) {
+        MessageStatus messageStatus = MessageStatus.status(status);
+        ChatManager.Instance().updateMessage(messageId, messageStatus);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void uploadMedia(String fileName, String data, int mediaType, JSCallback successCB, JSCallback failCB, JSCallback progressCB) {
+        byte[] mediaData = Base64.decode(data, Base64.DEFAULT);
+        ChatManager.Instance().uploadMedia(fileName, mediaData, mediaType, new JSGeneralCallback2(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void sendConferenceRequest(long sessionId, String roomId, String request, String data, boolean advance, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().sendConferenceRequest(sessionId, roomId, request, data, new JSGeneralCallback2(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void searchFiles(String keyword, String strConv, String fromUser, String beforeUid, int count, JSCallback successCB, JSCallback failCB) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        ChatManager.Instance().searchFileRecords(keyword, conversation, fromUser, Long.parseLong(beforeUid), count, new JSGetFileRecordCallback(successCB, failCB));
+
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void searchMyFiles(String keyword, String beforeMessageUid, int count, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().searchMyFileRecords(keyword, Long.parseLong(beforeMessageUid), count, new JSGetFileRecordCallback(successCB, failCB));
     }
 
 
@@ -1033,6 +1313,31 @@ public class ClientModule extends UniModule {
         }
     }
 
+    private static class JSGetFileRecordCallback implements GetFileRecordCallback {
+
+        private JSCallback successCB = null;
+        private JSCallback failCB = null;
+
+        public JSGetFileRecordCallback(JSCallback successCB, JSCallback failCB) {
+            this.successCB = successCB;
+            this.failCB = failCB;
+        }
+
+        @Override
+        public void onSuccess(List<FileRecord> records) {
+            if (successCB != null) {
+                successCB.invoke(JSONObject.toJSONString(records, ClientUniAppHookProxy.serializeConfig));
+            }
+        }
+
+        @Override
+        public void onFail(int errorCode) {
+            if (failCB != null) {
+                failCB.invoke(errorCode);
+            }
+        }
+    }
+
     private MessageContent messagePayloadStringToMessageContent(String text) {
         MessagePayload messagePayload = null;
         try {
@@ -1045,7 +1350,6 @@ public class ClientModule extends UniModule {
         }
         return null;
     }
-
 
     static <T> T parseObject(String text, Class<T> clazz) {
         try {

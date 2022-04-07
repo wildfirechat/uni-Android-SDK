@@ -3044,17 +3044,17 @@ public class ChatManager {
      *
      * @param conversation    会话，如果为空则获取当前用户所有收到和发出的文件记录
      * @param fromUser        文件发送用户，如果为空则获取该用户发出的文件记录
-     * @param beforeMessageId 起始消息的消息id
+     * @param beforeMessageUid 起始消息的消息uid
      * @param count           获取消息的条数
      * @param callback
      */
-    public void getConversationFileRecords(Conversation conversation, String fromUser, long beforeMessageId, int count, GetFileRecordCallback callback) {
+    public void getConversationFileRecords(Conversation conversation, String fromUser, long beforeMessageUid, int count, GetFileRecordCallback callback) {
         if (!checkRemoteService()) {
             return;
         }
 
         try {
-            mClient.getConversationFileRecords(conversation, fromUser, beforeMessageId, count, new IGetFileRecordCallback.Stub() {
+            mClient.getConversationFileRecords(conversation, fromUser, beforeMessageUid, count, new IGetFileRecordCallback.Stub() {
                 @Override
                 public void onSuccess(List<FileRecord> messages) throws RemoteException {
                     if (callback != null) {
