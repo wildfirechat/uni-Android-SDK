@@ -10,6 +10,7 @@ import com.taobao.weex.bridge.JSCallback;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 import cn.wildfirechat.message.Message;
 import cn.wildfirechat.message.MessageContent;
@@ -18,6 +19,8 @@ import cn.wildfirechat.model.ChannelInfo;
 import cn.wildfirechat.model.ChatRoomInfo;
 import cn.wildfirechat.model.ChatRoomMembersInfo;
 import cn.wildfirechat.model.Conversation;
+import cn.wildfirechat.model.ConversationInfo;
+import cn.wildfirechat.model.ConversationSearchResult;
 import cn.wildfirechat.model.Friend;
 import cn.wildfirechat.model.FriendRequest;
 import cn.wildfirechat.model.GroupInfo;
@@ -28,6 +31,7 @@ import cn.wildfirechat.model.ModifyGroupInfoType;
 import cn.wildfirechat.model.ModifyMyInfoEntry;
 import cn.wildfirechat.model.ModifyMyInfoType;
 import cn.wildfirechat.model.Socks5ProxyInfo;
+import cn.wildfirechat.model.UnreadCount;
 import cn.wildfirechat.model.UserInfo;
 import cn.wildfirechat.remote.ChatManager;
 import cn.wildfirechat.remote.GeneralCallback;
@@ -36,6 +40,7 @@ import cn.wildfirechat.remote.GetChatRoomInfoCallback;
 import cn.wildfirechat.remote.GetChatRoomMembersInfoCallback;
 import cn.wildfirechat.remote.GetGroupInfoCallback;
 import cn.wildfirechat.remote.GetGroupMembersCallback;
+import cn.wildfirechat.remote.GetMessageCallback;
 import cn.wildfirechat.remote.GetOneRemoteMessageCallback;
 import cn.wildfirechat.remote.GetRemoteMessageCallback;
 import cn.wildfirechat.remote.GetUserInfoCallback;
@@ -142,13 +147,6 @@ public class ClientModule extends UniModule {
     public String getClientId() {
         Log.d(TAG, "getClientId " + ChatManager.Instance().getClientId());
         return ChatManager.Instance().getClientId();
-    }
-
-
-    @UniJSMethod(uiThread = false)
-    public void setLastReceivedMessageUnRead(String strConv, String messageUid, String timestamp) {
-        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
-        ChatManager.Instance().markAsUnRead(conversation, false);
     }
 
     @UniJSMethod(uiThread = false)
@@ -741,6 +739,249 @@ public class ClientModule extends UniModule {
     public void destoryChannel(String channelId, JSCallback successCB, JSCallback failCB) {
         ChatManager.Instance().destoryChannel(channelId, new JSGeneralCallback(successCB, failCB));
     }
+
+    @UniJSMethod(uiThread = false)
+    public String getConversationInfos(List<Integer> types, List<Integer> lines) {
+        List<Conversation.ConversationType> conversationTypes = new ArrayList<>();
+        for (Integer type : types) {
+            conversationTypes.add(Conversation.ConversationType.type(type));
+        }
+        List<ConversationInfo> conversationInfos = ChatManager.Instance().getConversationList(conversationTypes, lines);
+        return JSONObject.toJSONString(conversationInfos, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getConversationInfo(String strConv) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        ConversationInfo conversationInfo = ChatManager.Instance().getConversation(conversation);
+        return JSONObject.toJSONString(conversationInfo, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String searchConversation(String keyword, List<Integer> types, List<Integer> lines) {
+        List<Conversation.ConversationType> conversationTypes = new ArrayList<>();
+        for (Integer type : types) {
+            conversationTypes.add(Conversation.ConversationType.type(type));
+        }
+        List<ConversationSearchResult> conversationInfos = ChatManager.Instance().searchConversation(keyword, conversationTypes, lines);
+        return JSONObject.toJSONString(conversationInfos, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void removeConversation(String strConv, boolean clearMsg) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        ChatManager.Instance().removeConversation(conversation, clearMsg);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void setConversationTop(String strConv, boolean top, JSCallback successCB, JSCallback failCB) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        ChatManager.Instance().setConversationTop(conversation, top, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void setConversationSlient(String strConv, boolean silent, JSCallback successCB, JSCallback failCB) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        ChatManager.Instance().setConversationSilent(conversation, silent, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void setConversationDraft(String strConv, String draft) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        ChatManager.Instance().setConversationDraft(conversation, draft);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void setConversationTimestamp(String strConv, String timestamp) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        ChatManager.Instance().setConversationTimestamp(conversation, Long.parseLong(timestamp));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getUnreadCount(List<Integer> types, List<Integer> lines) {
+        List<Conversation.ConversationType> conversationTypes = new ArrayList<>();
+        for (Integer type : types) {
+            conversationTypes.add(Conversation.ConversationType.type(type));
+        }
+        UnreadCount unreadCount = ChatManager.Instance().getUnreadCountEx(conversationTypes, lines);
+        return JSONObject.toJSONString(unreadCount, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getConversationUnreadCount(String strConv) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        UnreadCount unreadCount = ChatManager.Instance().getUnreadCount(conversation);
+        return JSONObject.toJSONString(unreadCount, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void clearConversationUnreadStatus(String strConv) {
+        Conversation conversation = parseObject(strConv, Conversation.class);
+        ChatManager.Instance().clearUnreadStatus(conversation);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void setLastReceivedMessageUnRead(String strConv, String messageUid, String timestamp) {
+        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+        ChatManager.Instance().markAsUnRead(conversation, false);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getConversationRead(String strConv) {
+        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+        Map<String, Long> conversationRead = ChatManager.Instance().getConversationRead(conversation);
+        return JSONObject.toJSONString(ClientUniAppHookProxy.strLongMap2Array(conversationRead), ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getMessageDelivery(String strConv) {
+        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+        Map<String, Long> messageDelivery = ChatManager.Instance().getMessageDelivery(conversation);
+        return JSONObject.toJSONString(ClientUniAppHookProxy.strLongMap2Array(messageDelivery), ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void clearAllUnreadStatus() {
+        ChatManager.Instance().clearAllUnreadStatus();
+    }
+
+    @UniJSMethod(uiThread = false)
+    public Long getConversationFirstUnreadMessageId(String strConv) {
+        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+        return ChatManager.Instance().getFirstUnreadMessageId(conversation);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void setMediaMessagePlayed(int messageId) {
+        ChatManager.Instance().setMediaMessagePlayed(messageId);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public void setMessageLocalExtra(int messageId, String extra) {
+        ChatManager.Instance().setMessageLocalExtra(messageId, extra);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public boolean isMyFriend(String userId) {
+        return ChatManager.Instance().isMyFriend(userId);
+    }
+
+    @UniJSMethod(uiThread = true)
+    public void sendFriendRequest(String userId, String reason, String extra, JSCallback successCB, JSCallback failCB) {
+        ChatManager.Instance().sendFriendRequest(userId, reason, extra, new JSGeneralCallback(successCB, failCB));
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getMessages(String strConv, List<Integer> types, int fromIndex, boolean before, int count, String withUser) {
+        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        List<Message> messageList = new ArrayList<>();
+        ChatManager.Instance().getMessages(conversation, types, fromIndex, before, count, withUser, new GetMessageCallback() {
+            @Override
+            public void onSuccess(List<Message> messages, boolean hasMore) {
+                messageList.addAll(messages);
+                if (!hasMore) {
+                    latch.countDown();
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                latch.countDown();
+            }
+        });
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getMessagesEx(List<Integer> convTypes, List<Integer> lines, List<Integer> contentTypes, int fromIndex, boolean before, int count, String withUser) {
+        CountDownLatch latch = new CountDownLatch(1);
+
+        List<Message> messageList = new ArrayList<>();
+
+        List<Conversation.ConversationType> conversationTypes = new ArrayList<>();
+        for (Integer type : convTypes) {
+            conversationTypes.add(Conversation.ConversationType.type(type));
+        }
+        ChatManager.Instance().getMessagesEx(conversationTypes, contentTypes, lines, fromIndex, before, count, withUser, new GetMessageCallback() {
+            @Override
+            public void onSuccess(List<Message> messages, boolean hasMore) {
+                messageList.addAll(messages);
+                if (!hasMore) {
+                    latch.countDown();
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                latch.countDown();
+            }
+        });
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getUserMessages(String userId, String strConv, List<Integer> types, int fromIndex, boolean before, int count) {
+        Conversation conversation = JSONObject.parseObject(strConv, Conversation.class);
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        List<Message> messageList = new ArrayList<>();
+        ChatManager.Instance().getUserMessages(userId, conversation, fromIndex, before, count, new GetMessageCallback() {
+            @Override
+            public void onSuccess(List<Message> messages, boolean hasMore) {
+                messageList.addAll(messages);
+                if (!hasMore) {
+                    latch.countDown();
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                latch.countDown();
+            }
+        });
+        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+    }
+
+    @UniJSMethod(uiThread = false)
+    public String getUserMessagesEx(String userId, List<Integer> convTypes, List<Integer> lines, List<Integer> types, int fromIndex, boolean before, int count) {
+        List<Conversation.ConversationType> conversationTypes = new ArrayList<>();
+        for (Integer type : convTypes) {
+            conversationTypes.add(Conversation.ConversationType.type(type));
+        }
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        List<Message> messageList = new ArrayList<>();
+        ChatManager.Instance().getUserMessagesEx(userId, conversationTypes, lines, types, fromIndex, before, count, new GetMessageCallback() {
+            @Override
+            public void onSuccess(List<Message> messages, boolean hasMore) {
+                messageList.addAll(messages);
+                if (!hasMore) {
+                    latch.countDown();
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                latch.countDown();
+            }
+        });
+        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+    }
+
 
     private static class JSGeneralCallback implements GeneralCallback {
 
