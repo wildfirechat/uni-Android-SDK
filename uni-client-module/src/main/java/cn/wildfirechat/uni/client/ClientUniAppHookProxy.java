@@ -14,7 +14,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -22,6 +21,7 @@ import java.util.regex.Pattern;
 
 import cn.wildfirechat.client.ConnectionStatus;
 import cn.wildfirechat.client.NotInitializedExecption;
+import cn.wildfirechat.model.UserOnlineState;
 import cn.wildfirechat.remote.ChatManager;
 import io.dcloud.feature.uniapp.UniAppHookProxy;
 
@@ -119,6 +119,15 @@ public class ClientUniAppHookProxy implements UniAppHookProxy {
 
         return array;
     }
+
+    static JSONArray convertUserOnlineMap(Map<String, UserOnlineState> map) {
+
+        JSONArray array = new JSONArray();
+        for (Map.Entry<String, UserOnlineState> entry : map.entrySet()) {
+            array.add(entry.getValue());
+        }
+        return array;
+    }
 }
 
 class WildfireListenerHandler implements InvocationHandler {
@@ -149,7 +158,10 @@ class WildfireListenerHandler implements InvocationHandler {
 
             switch (methodName) {
                 case "onMessageDelivered":
-                    array.add(ClientUniAppHookProxy.strLongMap2Array((Map<String, Long>) args[0]));
+                    array.add(JSONObject.toJSONString(ClientUniAppHookProxy.strLongMap2Array((Map<String, Long>) args[0]), ClientUniAppHookProxy.serializeConfig));
+                    break;
+                case "onUserOnlineEvent":
+                    array.add(JSONObject.toJSONString(ClientUniAppHookProxy.convertUserOnlineMap((Map<String, UserOnlineState>) args[0]), ClientUniAppHookProxy.serializeConfig));
                     break;
                 default:
                     for (Object e : args) {
@@ -161,7 +173,7 @@ class WildfireListenerHandler implements InvocationHandler {
         }
 
         if (ClientModule.uniSDKInstance != null) {
-            Log.d(TAG, MessageFormat.format("事件[{0}]:{1}", methodName, array.toJSONString()));
+//            Log.d(TAG, MessageFormat.format("事件[{0}]:{1}", methodName, array.toJSONString()));
             JSONObject object = new JSONObject();
             object.put("args", array);
             object.put("timestamp", System.currentTimeMillis());

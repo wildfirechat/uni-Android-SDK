@@ -780,7 +780,7 @@ public class ClientModule extends UniModule {
     }
 
     @UniJSMethod(uiThread = false)
-    public void clearConversationUnreadStatus(String strConv) {
+    public void clearUnreadStatus(String strConv) {
         Conversation conversation = parseObject(strConv, Conversation.class);
         ChatManager.Instance().clearUnreadStatus(conversation);
     }
