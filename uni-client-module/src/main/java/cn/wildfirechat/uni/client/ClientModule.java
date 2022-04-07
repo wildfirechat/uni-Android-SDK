@@ -561,6 +561,11 @@ public class ClientModule extends UniModule {
         ChatManager.Instance().setFavGroup(groupId, fav, new JSGeneralCallback(successCB, failCB));
     }
 
+    @UniJSMethod(uiThread = true)
+    public String getUserSetting(int scope, String key) {
+        return ChatManager.Instance().getUserSetting(scope, key);
+    }
+
     private static class JSGeneralCallback implements GeneralCallback {
 
         private JSCallback successCB = null;

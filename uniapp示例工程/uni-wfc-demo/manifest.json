@@ -50,7 +50,6 @@
         },
         "nativePlugins" : {
             "uni-wfc" : {
-                "IM服务地址" : "",
                 "__plugin_info__" : {
                     "name" : "基于野火im的即时通讯SDK",
                     "description" : "基于野火im的即时通讯SDK",
@@ -60,14 +59,7 @@
                     "ios_bundle_id" : "",
                     "isCloud" : true,
                     "bought" : 1,
-                    "pid" : "4547",
-                    "parameters" : {
-                        "IM服务地址" : {
-                            "des" : "可以是IP和域名，没有http开头，也不用配置端口，局域网需要填写内网地址，不可配置为127.0.0.1或192.168.0.1，如果是域名的话只支持一级域名或www,im,imtest,imdev的二级域名，其它二级域名不支持",
-                            "key" : "IM_SERVER_HOST",
-                            "value" : ""
-                        }
-                    }
+                    "pid" : "4547"
                 }
             }
         }

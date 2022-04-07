@@ -12,7 +12,7 @@ include ':pttclient'
 // include ':uikit'
 
 include ':mars-core-release'
-include ':uni-uikit-module'
+//include ':uni-uikit-module'
 include ':uni-client-module'
 include ':uniplugin-module'
 
