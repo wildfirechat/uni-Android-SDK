@@ -71,7 +71,7 @@ export default class Message {
             return null;
         }
         // iOS，Android，Windows，OSX
-        if ([1, 2, 3, 4].indexOf(Config.getWFCPlatform())) {
+        if ([1, 2, 3, 4].indexOf(Config.getWFCPlatform()) >= 0) {
             let msg = Object.assign(new Message(), obj);
             // big integer to number
             msg.messageId = Number(msg.messageId);
@@ -82,8 +82,8 @@ export default class Message {
             msg.messageUid = Long.fromValue(msg.messageUid);
             msg.timestamp = Long.fromValue(msg.timestamp).toNumber();
             msg.localExtra = obj.localExtra;
-            msg.conversation = new Conversation(obj.conversation.conversationType, obj.conversation.target, obj.conversation.line);
-            let contentClazz = MessageConfig.getMessageContentClazz(msg.content.type);
+            msg.conversation = new Conversation(obj.conversation.conversationType !== undefined ? obj.conversation.conversationType : obj.conversation.type, obj.conversation.target, obj.conversation.line);
+            let contentClazz = MessageConfig.getMessageContentClazz(msg.content.type !== undefined ? msg.content.type : msg.content.messageContentType);
             if (contentClazz) {
                 let content = new contentClazz();
                 try {

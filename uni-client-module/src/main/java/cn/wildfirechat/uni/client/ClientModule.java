@@ -712,7 +712,7 @@ public class ClientModule extends UniModule {
             conversationTypes.add(Conversation.ConversationType.type(type));
         }
         List<ConversationInfo> conversationInfos = ChatManager.Instance().getConversationList(conversationTypes, lines);
-        return JSONObject.toJSONString(conversationInfos, ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(conversationInfos, ClientUniAppHookProxy.serializeConfig) ;
     }
 
     @UniJSMethod(uiThread = false)

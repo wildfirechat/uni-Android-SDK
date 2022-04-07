@@ -64,7 +64,6 @@ export default {
    * 生命周期函数--监听页面显示
    */
   async onShow() {
-    wfc.onForeground();
 
     if (wfc.getConnectionStatus() === ConnectionStatus.ConnectionStatusConnected) {
       this.showConversationList();
@@ -158,6 +157,7 @@ export default {
 
     showConversationList() {
       let conversations = wfc.getConversationList([0, 1, 2], [0, 1]);
+      console.log('conversations', conversations);
       let clUi = conversations.map(item => {
         item.ui = {
           title: item.title(),

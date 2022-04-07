@@ -6,14 +6,17 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializeConfig;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -43,6 +46,7 @@ public class ClientUniAppHookProxy implements UniAppHookProxy {
 
             serializeConfig = new SerializeConfig();
             serializeConfig.put(Long.class, WfLongCodec.instance);
+            JSON.DEFAULT_GENERATE_FEATURE = SerializerFeature.config(JSON.DEFAULT_GENERATE_FEATURE, SerializerFeature.WriteEnumUsingToString, false);
         } else {
             // do nothing, 由 uikit 层去负责初始化
         }
@@ -172,8 +176,11 @@ class WildfireListenerHandler implements InvocationHandler {
             }
         }
 
-        if (ClientModule.uniSDKInstance != null) {
-//            Log.d(TAG, MessageFormat.format("事件[{0}]:{1}", methodName, array.toJSONString()));
+        if (methodName.equals("onReceiveMessage")){
+            Log.e("xxx", "xxx");
+        }
+        if (ClientModule.uniSDKInstance != null && !methodName.equals("onTrafficData")) {
+            Log.d(TAG, MessageFormat.format("事件[{0}]:{1}", methodName, array.toJSONString()));
             JSONObject object = new JSONObject();
             object.put("args", array);
             object.put("timestamp", System.currentTimeMillis());
