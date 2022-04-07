@@ -37,6 +37,7 @@ import cn.wildfirechat.model.ModifyMyInfoType;
 import cn.wildfirechat.model.Socks5ProxyInfo;
 import cn.wildfirechat.model.UnreadCount;
 import cn.wildfirechat.model.UserInfo;
+import cn.wildfirechat.model.UserOnlineState;
 import cn.wildfirechat.remote.ChatManager;
 import cn.wildfirechat.remote.GeneralCallback;
 import cn.wildfirechat.remote.GeneralCallback2;
@@ -55,6 +56,7 @@ import cn.wildfirechat.remote.SearchChannelCallback;
 import cn.wildfirechat.remote.SearchUserCallback;
 import cn.wildfirechat.remote.SendMessageCallback;
 import cn.wildfirechat.remote.UserSettingScope;
+import cn.wildfirechat.remote.WatchOnlineStateCallback;
 import io.dcloud.feature.uniapp.AbsSDKInstance;
 import io.dcloud.feature.uniapp.annotation.UniJSMethod;
 import io.dcloud.feature.uniapp.common.UniModule;
@@ -1102,7 +1104,21 @@ public class ClientModule extends UniModule {
 
     @UniJSMethod(uiThread = true)
     public void watchOnlineState(int convType, List<String> targets, int duration, JSCallback successCB, JSCallback failCB) {
-        ChatManager.Instance().watchOnlineState(convType, targets.toArray(new String[0]), duration, new JSGeneralCallback(successCB, failCB));
+        ChatManager.Instance().watchOnlineState(convType, targets.toArray(new String[0]), duration, new WatchOnlineStateCallback() {
+            @Override
+            public void onSuccess(UserOnlineState[] userOnlineStates) {
+                if (successCB != null) {
+                    successCB.invoke(JSONObject.toJSONString(userOnlineStates, ClientUniAppHookProxy.serializeConfig));
+                }
+            }
+
+            @Override
+            public void onFail(int errorCode) {
+                if (failCB != null) {
+                    failCB.invoke(errorCode);
+                }
+            }
+        });
     }
 
     @UniJSMethod(uiThread = true)
