@@ -67,6 +67,9 @@ export default class Message {
     }
 
     static fromProtoMessage(obj) {
+        if(!obj){
+            return null;
+        }
         if (!obj.conversation.target) {
             return null;
         }
