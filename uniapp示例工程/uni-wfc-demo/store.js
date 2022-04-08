@@ -4,7 +4,7 @@ import wfc from "./wfc/client/wfc";
 import EventType from "./wfc/client/wfcEvent";
 import ConversationType from "./wfc/model/conversationType";
 import {eq, gt, numberValue} from "./wfc/util/longUtil";
-import helper from "./utils/helper";
+import helper from "./pages/util/helper";
 import convert from './vendor/pinyin'
 import GroupType from "./wfc/model/groupType";
 // import {imageThumbnail, videoDuration, videoThumbnail} from "./ui/util/imageUtil";
@@ -22,7 +22,7 @@ import PersistFlag from "./wfc/messages/persistFlag";
 import TextMessageContent from "./wfc/messages/textMessageContent";
 import SearchType from "./wfc/model/searchType";
 import Config from "./config";
-import {getItem, setItem} from "./utils/storageHelper";
+import {getItem, setItem} from "./pages/util/storageHelper";
 import CompositeMessageContent from "./wfc/messages/compositeMessageContent";
 import {stringValue} from "./wfc/util/longUtil";
 // import {getConversationPortrait} from "./ui/util/imageUtil";

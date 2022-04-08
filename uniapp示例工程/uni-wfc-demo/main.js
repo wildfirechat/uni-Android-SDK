@@ -11,5 +11,6 @@ const app = new Vue({
 })
 
 app.store = store;
+store.init();
 
 app.$mount()
