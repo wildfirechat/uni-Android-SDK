@@ -57,6 +57,7 @@ import cn.wildfirechat.remote.SearchUserCallback;
 import cn.wildfirechat.remote.SendMessageCallback;
 import cn.wildfirechat.remote.UserSettingScope;
 import cn.wildfirechat.remote.WatchOnlineStateCallback;
+import cn.wildfirechat.uni.client.jsmodel.JSConversationInfo;
 import io.dcloud.feature.uniapp.AbsSDKInstance;
 import io.dcloud.feature.uniapp.annotation.UniJSMethod;
 import io.dcloud.feature.uniapp.common.UniModule;
@@ -541,7 +542,7 @@ public class ClientModule extends UniModule {
     @UniJSMethod(uiThread = false)
     public String getUserSettings(int scope) {
         Map<String, String> settings = ChatManager.Instance().getUserSettings(scope);
-        JSONArray array = ClientUniAppHookProxy.strStrMap2Array(settings);
+        JSONArray array = Util.strStrMap2Array(settings);
         return JSONObject.toJSONString(array, ClientUniAppHookProxy.serializeConfig);
     }
 
@@ -712,14 +713,15 @@ public class ClientModule extends UniModule {
             conversationTypes.add(Conversation.ConversationType.type(type));
         }
         List<ConversationInfo> conversationInfos = ChatManager.Instance().getConversationList(conversationTypes, lines);
-        return JSONObject.toJSONString(conversationInfos, ClientUniAppHookProxy.serializeConfig) ;
+        List<JSConversationInfo> jsConversationInfos = Util.conversationInfosToJSConversationInfos(conversationInfos);
+        return JSONObject.toJSONString(jsConversationInfos, ClientUniAppHookProxy.serializeConfig) ;
     }
 
     @UniJSMethod(uiThread = false)
     public String getConversationInfo(String strConv) {
         Conversation conversation = parseObject(strConv, Conversation.class);
         ConversationInfo conversationInfo = ChatManager.Instance().getConversation(conversation);
-        return JSONObject.toJSONString(conversationInfo, ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(JSConversationInfo.fromConversationInfo(conversationInfo), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)
@@ -795,14 +797,14 @@ public class ClientModule extends UniModule {
     public String getConversationRead(String strConv) {
         Conversation conversation = parseObject(strConv, Conversation.class);
         Map<String, Long> conversationRead = ChatManager.Instance().getConversationRead(conversation);
-        return JSONObject.toJSONString(ClientUniAppHookProxy.strLongMap2Array(conversationRead), ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(Util.strLongMap2Array(conversationRead), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)
     public String getMessageDelivery(String strConv) {
         Conversation conversation = parseObject(strConv, Conversation.class);
         Map<String, Long> messageDelivery = ChatManager.Instance().getMessageDelivery(conversation);
-        return JSONObject.toJSONString(ClientUniAppHookProxy.strLongMap2Array(messageDelivery), ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(Util.strLongMap2Array(messageDelivery), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)

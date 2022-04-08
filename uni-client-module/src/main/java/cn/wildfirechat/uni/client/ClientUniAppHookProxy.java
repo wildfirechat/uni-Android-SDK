@@ -6,11 +6,9 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializeConfig;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -24,8 +22,12 @@ import java.util.regex.Pattern;
 
 import cn.wildfirechat.client.ConnectionStatus;
 import cn.wildfirechat.client.NotInitializedExecption;
+import cn.wildfirechat.message.Message;
+import cn.wildfirechat.model.ConversationInfo;
 import cn.wildfirechat.model.UserOnlineState;
 import cn.wildfirechat.remote.ChatManager;
+import cn.wildfirechat.uni.client.jsmodel.JSConversationInfo;
+import cn.wildfirechat.uni.client.jsmodel.JSMessage;
 import io.dcloud.feature.uniapp.UniAppHookProxy;
 
 public class ClientUniAppHookProxy implements UniAppHookProxy {
@@ -46,7 +48,6 @@ public class ClientUniAppHookProxy implements UniAppHookProxy {
 
             serializeConfig = new SerializeConfig();
             serializeConfig.put(Long.class, WfLongCodec.instance);
-            JSON.DEFAULT_GENERATE_FEATURE = SerializerFeature.config(JSON.DEFAULT_GENERATE_FEATURE, SerializerFeature.WriteEnumUsingToString, false);
         } else {
             // do nothing, 由 uikit 层去负责初始化
         }
@@ -100,38 +101,6 @@ public class ClientUniAppHookProxy implements UniAppHookProxy {
         return false;
     }
 
-    static JSONArray strLongMap2Array(Map<String, Long> map) {
-        JSONArray array = new JSONArray();
-        for (Map.Entry<String, Long> entry : map.entrySet()) {
-            JSONObject object = new JSONObject();
-            object.put("key", entry.getKey());
-            object.put("value", entry.getValue());
-            array.add(object);
-        }
-
-        return array;
-    }
-
-    static JSONArray strStrMap2Array(Map<String, String> map) {
-        JSONArray array = new JSONArray();
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            JSONObject object = new JSONObject();
-            object.put("key", entry.getKey());
-            object.put("value", entry.getValue());
-            array.add(object);
-        }
-
-        return array;
-    }
-
-    static JSONArray convertUserOnlineMap(Map<String, UserOnlineState> map) {
-
-        JSONArray array = new JSONArray();
-        for (Map.Entry<String, UserOnlineState> entry : map.entrySet()) {
-            array.add(entry.getValue());
-        }
-        return array;
-    }
 }
 
 class WildfireListenerHandler implements InvocationHandler {
@@ -162,23 +131,31 @@ class WildfireListenerHandler implements InvocationHandler {
 
             switch (methodName) {
                 case "onMessageDelivered":
-                    array.add(JSONObject.toJSONString(ClientUniAppHookProxy.strLongMap2Array((Map<String, Long>) args[0]), ClientUniAppHookProxy.serializeConfig));
+                    array.add(JSONObject.toJSONString(Util.strLongMap2Array((Map<String, Long>) args[0]), ClientUniAppHookProxy.serializeConfig));
                     break;
                 case "onUserOnlineEvent":
-                    array.add(JSONObject.toJSONString(ClientUniAppHookProxy.convertUserOnlineMap((Map<String, UserOnlineState>) args[0]), ClientUniAppHookProxy.serializeConfig));
+                    array.add(JSONObject.toJSONString(Util.convertUserOnlineMap((Map<String, UserOnlineState>) args[0]), ClientUniAppHookProxy.serializeConfig));
+                    break;
+                case "onReceiveMessage":
+                    List<Message> messages = (List<Message>) args[0];
+                    boolean hasMore = (boolean) args[1];
+                    List<JSMessage> jsMessages = Util.messagesToJSMessages(messages);
+                    array.add(JSONObject.toJSONString(jsMessages, ClientUniAppHookProxy.serializeConfig));
+                    array.add(hasMore);
                     break;
                 default:
                     for (Object e : args) {
-                        array.add(JSONObject.toJSONString(e, ClientUniAppHookProxy.serializeConfig));
+                        if (e instanceof ConversationInfo){
+                            array.add(JSONObject.toJSONString(JSConversationInfo.fromConversationInfo((ConversationInfo) e), ClientUniAppHookProxy.serializeConfig));
+                        }else {
+                            array.add(JSONObject.toJSONString(e, ClientUniAppHookProxy.serializeConfig));
+                        }
                     }
                     break;
 
             }
         }
 
-        if (methodName.equals("onReceiveMessage")){
-            Log.e("xxx", "xxx");
-        }
         if (ClientModule.uniSDKInstance != null && !methodName.equals("onTrafficData")) {
             Log.d(TAG, MessageFormat.format("事件[{0}]:{1}", methodName, array.toJSONString()));
             JSONObject object = new JSONObject();

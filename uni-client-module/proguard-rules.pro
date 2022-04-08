@@ -20,3 +20,7 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 -keep public class * extends io.dcloud.feature.uniapp.common.UniModule{*;}
+-keep class cn.wildfirechat.uni.client.jsmodel.** {*;}
+-keepclassmembers class cn.wildfirechat.uni.client.jsmodel.** {
+  *;
+}
