@@ -5,6 +5,7 @@
   "author": "wfc",
   "license": "MIT",
   "dependencies": {
-    "long": "^5.2.0"
+    "long": "^5.2.0",
+    "vue-context": "^6.0.0"
   }
 }

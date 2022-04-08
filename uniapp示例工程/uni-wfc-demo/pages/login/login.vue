@@ -20,7 +20,7 @@
 
 <button @tap="bindLoginTap">登录</button>
 <button @tap="bindAuthCodeTap">获取验证码</button>
-  
+
 </view>
 </template>
 
@@ -86,7 +86,7 @@ export default {
               let token = loginResult.result.token;
               wfc.connect(userId, token);
               uni.switchTab({
-                url: '../chat-list/chat-list',
+                url: '../conversationList/ConversationListView',
 				success:()=>{
 					console.log('to conversation list success');
 				},

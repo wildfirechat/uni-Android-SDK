@@ -17,4 +17,6 @@ export default {
 
 <style>
 /*每个页面公共css */
+@import './global.css';
+@import './wfc.css';
 </style>

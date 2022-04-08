@@ -7,7 +7,7 @@
 			}
 		},
 		{
-			"path": "pages/chat-list/chat-list",
+			"path": "pages/conversationList/ConversationListView",
 			"style": {
 				"navigationBarTitleText": "会话列表"
 			}
@@ -34,7 +34,7 @@
 		"color": "#7f8389",
 		"list": [
 			{
-				"pagePath": "pages/chat-list/chat-list",
+				"pagePath": "pages/conversationList/ConversationListView",
 				"text": "会话列表",
 				"iconPath": "/static/image/tabbar/chat_list_unselected.png",
 				"selectedIconPath": "/static/image/tabbar/chat_list.png"

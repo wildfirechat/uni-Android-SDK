@@ -387,7 +387,6 @@ let store = {
             }
         });
 
-        window.__wfc = wfc;
     },
 
     _loadDefaultData() {
@@ -1067,9 +1066,10 @@ let store = {
             info.conversation._target._displayName = info.conversation._target.name;
         }
         if (!info.conversation._target.portrait) {
-            getConversationPortrait(info.conversation).then((portrait => {
-                info.conversation._target.portrait = portrait;
-            }))
+            info.conversation._target.portrait = Config.DEFAULT_PORTRAIT_URL;
+            // getConversationPortrait(info.conversation).then((portrait => {
+            //     info.conversation._target.portrait = portrait;
+            // }))
         }
         if (gt(info.timestamp, 0)) {
             info._timeStr = helper.dateFormat(info.timestamp);
@@ -1590,5 +1590,4 @@ function _reset() {
     miscState._reset();
 }
 
-window.__store = store;
 export default store

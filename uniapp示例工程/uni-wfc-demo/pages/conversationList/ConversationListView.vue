@@ -1,5 +1,5 @@
 <template>
-    <section class="conversation-list">
+    <div class="conversation-list">
         <ul>
             <li
                 @click="showConversation(conversationInfo)"
@@ -15,34 +15,34 @@
         </ul>
 
 
-<!--        <vue-context ref="menu" v-slot="{data:conversationInfo}" v-on:close="onConversationItemContextMenuClose">-->
-<!--            <li>-->
-<!--                <a @click.prevent="setConversationTop(conversationInfo)">{{-->
-<!--                        conversationInfo && conversationInfo.isTop ? $t('conversation.cancel_sticky_top') : $t('conversation.sticky_top')-->
-<!--                    }}</a>-->
-<!--            </li>-->
-<!--            <li>-->
-<!--                <a @click.prevent="setConversationSilent(conversationInfo)">{{-->
-<!--                        conversationInfo && conversationInfo.isSilent ? $t('conversation.enable_notification') : $t('conversation.disable_notification')-->
-<!--                    }}</a>-->
-<!--            </li>-->
-<!--            <li>-->
-<!--                <a @click.prevent="removeConversation(conversationInfo)">{{ $t('common.delete') }}</a>-->
-<!--            </li>-->
-<!--            <li v-show="conversationInfo-->
-<!--                && (!sharedConversationState.currentConversationInfo || !sharedConversationState.currentConversationInfo.conversation.equal(conversationInfo.conversation))-->
-<!--                && conversationInfo._unread === 0"-->
-<!--                @click.prevent="markConversationAsUnread(conversationInfo.conversation)">-->
-<!--                <a>{{ $t('conversation.mark_as_unread') }}</a>-->
-<!--            </li>-->
-<!--            <li v-show="conversationInfo-->
-<!--                && (!sharedConversationState.currentConversationInfo || !sharedConversationState.currentConversationInfo.conversation.equal(conversationInfo.conversation))-->
-<!--                && conversationInfo._unread > 0"-->
-<!--                @click.prevent="clearConversationUnreadStatus(conversationInfo.conversation)">-->
-<!--                <a>{{ $t('conversation.mark_as_read') }}</a>-->
-<!--            </li>-->
-<!--        </vue-context>-->
-    </section>
+        <vue-context ref="menu" v-slot="{data:conversationInfo}" v-on:close="onConversationItemContextMenuClose">
+            <li>
+                <a @click.prevent="setConversationTop(conversationInfo)">{{
+                        conversationInfo && conversationInfo.isTop ? echo('conversation.cancel_sticky_top') : echo('conversation.sticky_top')
+                    }}</a>
+            </li>
+            <li>
+                <a @click.prevent="setConversationSilent(conversationInfo)">{{
+                        conversationInfo && conversationInfo.isSilent ? echo('conversation.enable_notification') : echo('conversation.disable_notification')
+                    }}</a>
+            </li>
+            <li>
+                <a @click.prevent="removeConversation(conversationInfo)">{{ echo('common.delete') }}</a>
+            </li>
+            <li v-show="conversationInfo
+                && (!sharedConversationState.currentConversationInfo || !sharedConversationState.currentConversationInfo.conversation.equal(conversationInfo.conversation))
+                && conversationInfo._unread === 0"
+                @click.prevent="markConversationAsUnread(conversationInfo.conversation)">
+                <a>{{ echo('conversation.mark_as_unread') }}</a>
+            </li>
+            <li v-show="conversationInfo
+                && (!sharedConversationState.currentConversationInfo || !sharedConversationState.currentConversationInfo.conversation.equal(conversationInfo.conversation))
+                && conversationInfo._unread > 0"
+                @click.prevent="clearConversationUnreadStatus(conversationInfo.conversation)">
+                <a>{{ echo('conversation.mark_as_read') }}</a>
+            </li>
+        </vue-context>
+    </div>
 </template>
 
 <script>
@@ -88,7 +88,9 @@ export default {
 
         showConversationItemContextMenu(event, conversationInfo) {
             this.contextMenuConversationInfo = conversationInfo;
+            console.log('showConversationItemContextMenu', conversationInfo, this.$refs.menu, this.$refs.menu.open)
             this.$refs.menu.open(event, conversationInfo)
+            console.log('showConversationItemContextMenu end')
         },
 
         onConversationItemContextMenuClose() {
@@ -101,6 +103,11 @@ export default {
 
         markConversationAsUnread(conversation) {
             wfc.markConversationAsUnread(conversation, true);
+        },
+
+        echo(text){
+            console.log('echo ', text);
+            return text;
         }
     },
     activated() {

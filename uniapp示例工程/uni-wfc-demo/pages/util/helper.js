@@ -128,12 +128,6 @@ const helper = {
         });
     },
 
-    isOsx: window.process && window.process.platform === 'darwin',
-
-    isSuspend: () => {
-        return ipcRenderer.sendSync('is-suspend');
-    },
-
     // md5: (file) => {
     //     return new Promise((resolve, reject) => {
     //         new MD5().md5(file, (err, md5) => {
