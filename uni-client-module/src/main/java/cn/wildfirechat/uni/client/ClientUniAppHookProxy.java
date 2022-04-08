@@ -6,9 +6,11 @@ import android.util.Log;
 
 import androidx.annotation.RequiresApi;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializeConfig;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -48,6 +50,7 @@ public class ClientUniAppHookProxy implements UniAppHookProxy {
 
             serializeConfig = new SerializeConfig();
             serializeConfig.put(Long.class, WfLongCodec.instance);
+            JSON.DEFAULT_GENERATE_FEATURE = SerializerFeature.config(JSON.DEFAULT_GENERATE_FEATURE, SerializerFeature.WriteEnumUsingToString, false);
         } else {
             // do nothing, 由 uikit 层去负责初始化
         }
