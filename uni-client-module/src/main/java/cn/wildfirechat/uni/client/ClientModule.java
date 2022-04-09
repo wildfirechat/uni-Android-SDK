@@ -332,7 +332,7 @@ public class ClientModule extends UniModule {
     }
 
     @UniJSMethod(uiThread = true)
-    public void handleFriendRequest(String userId, boolean accept, String extra, JSCallback successCB, JSCallback failCB) {
+    public void handleFriendRequest(String userId, boolean accept, JSCallback successCB, JSCallback failCB, String extra) {
         ChatManager.Instance().handleFriendRequest(userId, accept, extra, new JSGeneralCallback(successCB, failCB));
     }
 
@@ -714,7 +714,7 @@ public class ClientModule extends UniModule {
         }
         List<ConversationInfo> conversationInfos = ChatManager.Instance().getConversationList(conversationTypes, lines);
         List<JSConversationInfo> jsConversationInfos = Util.conversationInfosToJSConversationInfos(conversationInfos);
-        return JSONObject.toJSONString(jsConversationInfos, ClientUniAppHookProxy.serializeConfig) ;
+        return JSONObject.toJSONString(jsConversationInfos, ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)
