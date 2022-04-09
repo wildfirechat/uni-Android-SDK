@@ -54,6 +54,17 @@ export default {
     methods: {
         setCurrentUser(userInfo) {
             store.setCurrentFriend(userInfo)
+            console.log('navigateTo userDetailView');
+            uni.navigateTo({
+                url: './UserDetailView',
+                success: () => {
+                    console.log('nav to userDetailView success');
+
+                },
+                fail: (err) => {
+                    console.log('nav to userDetailView err', err);
+                }
+            });
         },
         showNewFriends() {
             store.toggleFriendRequestList();

@@ -62,7 +62,10 @@ export default {
 
     methods: {
         showConversation(conversationInfo) {
-            store.setCurrentConversationInfo(conversationInfo);
+            // store.setCurrentConversationInfo(conversationInfo);
+            uni.navigateTo({
+                url:'',
+            });
         },
 
         setConversationTop(conversationInfo) {

@@ -54,6 +54,13 @@ export default {
         }
     },
 
+    mounted(){
+        this.user = this.sharedStateContact.currentFriend;
+        // uni.setNavigationBarTitle({
+        //     title:this.user._displayName,
+        // });
+    },
+
     methods: {
         chat() {
             let conversation = new Conversation(ConversationType.Single, this.user.uid, 0);
@@ -96,14 +103,14 @@ export default {
 <style lang="css" scoped>
 
 .user-detail-container {
-    margin-left: 90px;
-    margin-right: 90px;
+    margin-left: 30px;
+    margin-right: 30px;
     border-top-right-radius: var(--main-border-radius);
     border-bottom-right-radius: var(--main-border-radius);
 }
 
 .header {
-    margin-top: 60px;
+    margin-top: 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;

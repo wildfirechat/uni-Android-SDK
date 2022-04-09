@@ -13,9 +13,9 @@
 			}
 		},
 		{
-			"path": "pages/chat/chat",
+			"path": "pages/contact/UserDetailView",
 			"style": {
-				"navigationBarTitleText": "会话页面"
+				"navigationBarTitleText": " 用户信息"
 			}
 		},
 		{
@@ -42,8 +42,8 @@
 			{
 				"pagePath": "pages/contact/ContactListView",
 				"text": "好友列表",
-				"iconPath": "/static/image/tabbar/friend_unselected.png",
-				"selectedIconPath": "/static/image/tabbar/friend.png"
+				"iconPath": "static/image/tabbar/friend_unselected.png",
+				"selectedIconPath": "static/image/tabbar/friend.png"
 			}
 		]
 	},
