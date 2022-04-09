@@ -23,7 +23,7 @@
 			"style": {}
 		},
 		{
-			"path": "pages/friends/friends",
+			"path": "pages/contact/ContactListView",
 			"style": {
 				"navigationBarTitleText": "好友"
 			}
@@ -40,7 +40,7 @@
 				"selectedIconPath": "/static/image/tabbar/chat_list.png"
 			},
 			{
-				"pagePath": "pages/friends/friends",
+				"pagePath": "pages/contact/ContactListView",
 				"text": "好友列表",
 				"iconPath": "/static/image/tabbar/friend_unselected.png",
 				"selectedIconPath": "/static/image/tabbar/friend.png"

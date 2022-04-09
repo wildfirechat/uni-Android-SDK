@@ -6,6 +6,8 @@
   "license": "MIT",
   "dependencies": {
     "long": "^5.2.0",
-    "vue-context": "^6.0.0"
+    "vue-context": "^6.0.0",
+    "vue-i18n": "^9.1.9",
+    "vue-spinner": "^1.0.4"
   }
 }
