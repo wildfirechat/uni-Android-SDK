@@ -23,9 +23,9 @@
 </template>
 
 <script>
-import Message from "../../../../../wfc/messages/message";
-import UserCardView from "../../../user/UserCardView";
-import wfc from "../../../../../wfc/client/wfc";
+import Message from "@/wfc/messages/message";
+import UserCardView from "@/pages/user/UserCardView";
+import wfc from "@/wfc/client/wfc";
 
 export default {
     name: "UserCardMessageContentView",

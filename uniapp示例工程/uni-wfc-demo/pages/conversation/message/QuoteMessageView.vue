@@ -38,9 +38,9 @@
 import store from "@/store";
 import MessageContentType from "@/wfc/messages/messageContentType";
 import Message from "@/wfc/messages/message";
-import PreviewQuotedMessageView from "@/ui/main/conversation/message/PreviewQuotedMessageView";
-import {fs, isElectron, shell} from "../../../../platform";
-import {downloadFile} from "../../../../platformHelper";
+import PreviewQuotedMessageView from "@/pages/conversation/message/PreviewQuotedMessageView";
+import {fs, isElectron, shell} from "@/platform";
+import {downloadFile} from "@/platformHelper";
 
 export default {
     name: "QuoteMessageView",

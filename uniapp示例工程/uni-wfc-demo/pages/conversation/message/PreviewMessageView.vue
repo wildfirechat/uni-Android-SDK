@@ -1,5 +1,5 @@
 <template>
-    <section>
+    <div>
         <ul>
             <li v-for="msg in messages" :key="msg.messageId">
                 <div class="message-container">
@@ -19,7 +19,7 @@
             </li>
         </ul>
 
-    </section>
+    </div>
 
 </template>
 

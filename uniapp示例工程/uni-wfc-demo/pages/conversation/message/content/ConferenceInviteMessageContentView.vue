@@ -15,10 +15,10 @@
 
 <script>
 import Message from "@/wfc/messages/message";
-import avenginekitproxy from "../../../../../wfc/av/engine/avenginekitproxy";
-import avenginekit from "../../../../../wfc/av/internal/engine.min";
-import store from "../../../../../store";
-import ConversationType from "../../../../../wfc/model/conversationType";
+import avenginekitproxy from "@/wfc/av/engine/avenginekitproxy";
+import avenginekit from "@/wfc/av/internal/engine.min";
+import store from "@/store";
+import ConversationType from "@/wfc/model/conversationType";
 
 export default {
     name: "ConferenceInviteMessageContentView",

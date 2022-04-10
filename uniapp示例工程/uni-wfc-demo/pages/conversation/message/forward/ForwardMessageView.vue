@@ -1,5 +1,5 @@
 <template>
-    <section class="forward-message-container">
+    <div class="forward-message-container">
         <div class="forward-message">
             <div v-if="forwardType === 0">
                 <img v-if="[3, 6].indexOf(messages[0].messageContent.type) >= 0"
@@ -17,12 +17,12 @@
         <label>
             <input type="text" :placeholder="$t('conversation.forward_extra')" v-model="extraMessageText">
         </label>
-    </section>
+    </div>
 </template>
 
 <script>
 import MessageContentType from "@/wfc/messages/messageContentType";
-import ForwardType from "@/ui/main/conversation/message/forward/ForwardType";
+import ForwardType from "@/pages/conversation/message/forward/ForwardType";
 import ConversationType from "@/wfc/model/conversationType";
 
 export default {

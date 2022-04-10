@@ -1,5 +1,5 @@
 <template>
-    <section>
+    <div>
 
         <div>
             <img/>
@@ -14,11 +14,11 @@
                 <div>删除远程消息</div>
             </li>
         </ul>
-    </section>
+    </div>
 </template>
 
 <script>
-import Message from "../../../../wfc/messages/message";
+import Message from "@/wfc/messages/message";
 
 export default {
     name: "DeleteMessageDialogView",

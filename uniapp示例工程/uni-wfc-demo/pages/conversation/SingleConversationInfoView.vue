@@ -14,10 +14,10 @@
 </template>
 
 <script>
-import UserListVue from "@/ui/main/user/UserListVue";
+import UserListVue from "@/pages/user/UserListVue";
 import ConversationInfo from "@/wfc/model/conversationInfo";
 import store from "@/store";
-import PickUserView from "@/ui/main/pick/PickUserView";
+import PickUserView from "@/pages/pick/PickUserView";
 
 export default {
     name: "SingleConversationInfoView",

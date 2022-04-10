@@ -8,10 +8,10 @@
 <script>
 
 import Message from "@/wfc/messages/message";
-import wfc from "../../../../wfc/client/wfc";
-import MessageContentType from "../../../../wfc/messages/messageContentType";
-import {numberValue} from "../../../../wfc/util/longUtil";
-import Config from "../../../../config";
+import wfc from "@/wfc/client/wfc";
+import MessageContentType from "@/wfc/messages/messageContentType";
+import {numberValue} from "@/wfc/util/longUtil";
+import Config from "@/config";
 
 export default {
     name: "RecallNotificationMessageContentView",

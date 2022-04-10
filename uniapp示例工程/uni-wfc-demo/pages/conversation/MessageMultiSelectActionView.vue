@@ -1,5 +1,5 @@
 <template>
-    <section class="multi-selection-action-container">
+    <div class="multi-selection-action-container">
         <ul>
             <li>
                 <div class="action" @click="forwardOneByOne">
@@ -39,12 +39,12 @@
                 </div>
             </li>
         </ul>
-    </section>
+    </div>
 </template>
 
 <script>
 import store from "@/store";
-import ForwardType from "@/ui/main/conversation/message/forward/ForwardType";
+import ForwardType from "@/pages/conversation/message/forward/ForwardType";
 
 export default {
     name: "MessageMultiSelectionActionView",

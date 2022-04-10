@@ -42,7 +42,7 @@
 
 <script>
 import store from "@/store";
-import CheckableUserListView from "@/ui/main/user/CheckableUserListView";
+import CheckableUserListView from "@/pages/user/CheckableUserListView";
 
 export default {
     name: "PickUserView",

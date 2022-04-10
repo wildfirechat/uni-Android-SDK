@@ -1,5 +1,5 @@
 <template>
-    <section>
+    <div>
         <ul>
             <li v-for="(friendRequest,index) in sharedContactState.friendRequestList" :key="index"
                 @click="showFriendRequest(friendRequest)">
@@ -31,7 +31,7 @@
                 </div>
             </li>
         </ul>
-    </section>
+    </div>
 
 </template>
 

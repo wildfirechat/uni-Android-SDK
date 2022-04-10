@@ -1,5 +1,5 @@
 <template>
-    <section>
+    <div>
         <ul>
             <li v-for="(group, index) in sharedContactState.favGroupList" :key="index" @click="showGroup(group)">
                 <div class="group-item"
@@ -9,7 +9,7 @@
                 </div>
             </li>
         </ul>
-    </section>
+    </div>
 
 </template>
 

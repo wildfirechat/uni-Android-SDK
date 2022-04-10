@@ -10,11 +10,10 @@
 
 <script>
 import Message from "@/wfc/messages/message";
-import {parser as emojiParse} from "@/ui/util/emoji";
+import {parser as emojiParse} from "@/emoji/emoji";
 import wfc from "@/wfc/client/wfc";
 import ConversationType from "@/wfc/model/conversationType";
-import {ipcRenderer, isElectron} from "../../../../../platform";
-import {stringValue} from "../../../../../wfc/util/longUtil";
+import {stringValue} from "@/wfc/util/longUtil";
 
 export default {
     name: "CompositeMessageContentView",
@@ -46,20 +45,10 @@ export default {
 
     methods: {
         showCompositePage() {
-            if (isElectron()) {
-                let hash = window.location.hash;
-                let url = window.location.origin;
-                if (hash) {
-                    url = window.location.href.replace(hash, '#/composite');
-                } else {
-                    url += "/composite"
-                }
-                ipcRenderer.send('show-composite-message-window', {
-                    messageUid: stringValue(this.message.messageUid),
-                    url: url,
-                });
+            if (false) {
             } else {
-                let CompositeMessagePage = require('../../../CompositeMessagePage').default;
+                // fixme
+                // let CompositeMessagePage = require('../../../CompositeMessagePage').default;
                 let beforeClose = () => {
                     // todo
                 };

@@ -1,6 +1,6 @@
 <template>
     <div class="pick-user-container">
-        <section class="user-list-panel">
+        <div class="user-list-panel">
             <div class="input-container">
                 <input type="text" :placeholder="$t('common.search')" v-model="query">
             </div>
@@ -14,8 +14,8 @@
                                        :padding-left="'20px'"
                                        :enable-category-label-sticky="true"/>
             </div>
-        </section>
-        <section class="checked-user-list-container">
+        </div>
+        <div class="checked-user-list-container">
             <header>
                 <h2>{{ $t('conversation.forward_title') }}</h2>
                 <span v-if="sharedPickState.users.length === 0">{{ $t('conversation.picked_contact') }}</span>
@@ -38,15 +38,15 @@
                 <button @click="cancel" class="cancel">{{ $t('common.cancel') }}</button>
                 <button @click="confirm" class="confirm">{{ $t('common.send') }}</button>
             </footer>
-        </section>
+        </div>
     </div>
 </template>
 
 <script>
 import store from "@/store";
-import ForwardMessageView from "@/ui/main/conversation/message/forward/ForwardMessageView";
-import CheckableUserListView from "@/ui/main/user/CheckableUserListView";
-import Config from "../../../../../config";
+import ForwardMessageView from "@/pages/conversation/message/forward/ForwardMessageView";
+import CheckableUserListView from "@/pages/user/CheckableUserListView";
+import Config from "@/config";
 
 export default {
     name: "ForwardMessageByCreateConversationView",

@@ -13,7 +13,7 @@
 <script>
 import Message from "@/wfc/messages/message";
 import ScaleLoader from 'vue-spinner/src/ScaleLoader'
-import store from "../../../../../store";
+import store from "@/store";
 
 export default {
     name: "AudioMessageContentView",

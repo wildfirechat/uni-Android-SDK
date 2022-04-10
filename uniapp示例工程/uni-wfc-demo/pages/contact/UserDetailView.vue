@@ -1,5 +1,5 @@
 <template>
-    <section class="user-detail-container">
+    <div class="user-detail-container">
         <div class="header">
             <div>
                 <h2>{{ name }}</h2>
@@ -34,7 +34,7 @@
         <div class="footer">
             <a @click="this.chat">{{ $t('message.send_message') }}</a>
         </div>
-    </section>
+    </div>
 </template>
 
 <script>

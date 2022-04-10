@@ -27,6 +27,7 @@
 <script>
 import wfc from "../../wfc/client/wfc";
 import Config from '../../config';
+import {setItem} from "../util/storageHelper";
 
 export default {
   data() {
@@ -39,6 +40,27 @@ export default {
 
   components: {},
   props: {},
+    onShow(){
+      let userId = 'EPhwEwgg';
+      let tokne = 'tOi3KkHT+mFNRN1GacssK29YgcK/oCl/Os0IE53dZkNAeIdrevILfL0WIytwJbYAVdi1CNoyU1yAxqhKzxTboWivB+R1do3J2Os/QCUpETc2H1Eo9TZgrt1UUyYR2FWc9GVQV9StCpjvv0AunLc+2OmwJWfoel/2Vg56aKJjEYc='
+      console.log('jyj', 'saved token', userId, tokne)
+        if (tokne){
+            wfc.connect(userId, tokne);
+            uni.switchTab({
+                url: '../conversationList/ConversationListView',
+                success:()=>{
+                    console.log('to conversation list success');
+                },
+                fail: e => {
+                    console.log('to conversation list error', e);
+                },
+                complete: () => {
+                    console.log('switch tab complete')
+                }
+            });
+        }
+
+    },
   methods: {
     bindPhoneInput: function (e) {
       // this.setData({
@@ -85,6 +107,8 @@ export default {
               let userId = loginResult.result.userId;
               let token = loginResult.result.token;
               wfc.connect(userId, token);
+
+              console.log('jyj uuu',userId, token, wfc.getClientId())
               uni.switchTab({
                 url: '../conversationList/ConversationListView',
 				success:()=>{

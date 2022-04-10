@@ -1,32 +1,19 @@
 <template>
-    <section class="container">
+    <div class="container">
         <div class="message-time-container"
              v-bind:class="{checked:sharedPickState.messages.indexOf(message) >= 0}">
             <p v-if="this.message._showTime" class="time">{{ message._timeStr }}</p>
             <div class="message-avatar-content-container">
-                <tippy
-                    :to="'infoTrigger' + this.message.messageId"
-                    interactive
-                    :animate-fill="false"
-                    placement="left"
-                    distant="7"
-                    theme="light"
-                    animation="fade"
-                    trigger="click"
-                >
-                    <UserCardView v-on:close="closeUserCard" :user-info="message._from"/>
-                </tippy>
                 <div class="avatar-container">
-                    <input id="checkbox" v-if="sharedConversationState.enableMessageMultiSelection" type="checkbox"
-                           :value="message"
-                           v-model="sharedPickState.messages"/>
-                    <img ref="userCardTippy"
-                         :name="'infoTrigger' + this.message.messageId"
-                         @click="onClickUserPortrait(message.from)"
-                         @contextmenu.prevent="openMessageSenderContextMenu($event, message)"
-                         class="avatar"
-                         draggable="false"
-                         :src="message._from.portrait">
+<!--                    <input id="checkbox" v-if="sharedConversationState.enableMessageMultiSelection" type="checkbox"-->
+<!--                           :value="message"-->
+<!--                           v-model="sharedPickState.messages"/>-->
+                    <img
+                        @click="onClickUserPortrait(message.from)"
+                        @contextmenu.prevent="openMessageSenderContextMenu($event, message)"
+                        class="avatar"
+                        draggable="false"
+                        :src="message._from.portrait" alt="">
                 </div>
                 <!--消息内容 根据情况，if-else-->
                 <div class="message-name-content-container">
@@ -37,7 +24,7 @@
                                                          v-bind:class="{highlight:highLight}"
                                                          :message="message"
                                                          @contextmenu.prevent.native="openMessageContextMenu($event, message)"/>
-<!--                            <LoadingView v-if="isDownloading"/>-->
+                            <!--                            <LoadingView v-if="isDownloading"/>-->
                         </div>
                         <QuoteMessageView style="padding: 5px 0; max-width: 80%"
                                           v-if="quotedMessage"
@@ -50,17 +37,16 @@
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 
 </template>
 
 <script>
-import UserCardView from "@/ui/main/user/UserCardView";
-import MessageContentContainerView from "@/ui/main/conversation/message/MessageContentContainerView";
-import QuoteMessageView from "@/ui/main/conversation/message/QuoteMessageView";
-import LoadingView from "@/ui/common/LoadingView";
+import MessageContentContainerView from "@/pages/conversation/message/MessageContentContainerView";
+import QuoteMessageView from "@/pages/conversation/message/QuoteMessageView";
+import LoadingView from "@/pages/common/LoadingView";
 import store from "@/store";
-import wfc from "../../../../wfc/client/wfc";
+import wfc from "@/wfc/client/wfc";
 
 export default {
     name: "NormalInMessageContentView",
@@ -79,10 +65,6 @@ export default {
         onClickUserPortrait(userId) {
             wfc.getUserInfo(userId, true);
         },
-        closeUserCard() {
-            console.log('closeUserCard')
-            this.$refs["userCardTippy"]._tippy.hide();
-        },
         openMessageContextMenu(event, message) {
             this.$parent.$emit('openMessageContextMenu', event, message)
             this.highLight = true;
@@ -92,10 +74,6 @@ export default {
         },
     },
     mounted() {
-        this.$parent.$on('contextMenuClosed', () => {
-            this.highLight = false;
-        });
-
         if (this.message.messageContent.quoteInfo) {
             let messageUid = this.message.messageContent.quoteInfo.messageUid;
             let msg = store.getMessageByUid(messageUid);
@@ -118,7 +96,6 @@ export default {
     },
     components: {
         MessageContentContainerView,
-        UserCardView,
         QuoteMessageView,
         LoadingView
     },

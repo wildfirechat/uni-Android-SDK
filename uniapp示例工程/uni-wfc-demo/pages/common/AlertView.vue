@@ -1,5 +1,5 @@
 <template>
-    <section class="alert-content-container">
+    <div class="alert-content-container">
         <div class="portrait-container">
             <img :src="require(`@/assets/images/icon.png`)" alt="">
         </div>
@@ -9,7 +9,7 @@
             <button class="confirm" @click="confirm">{{ this.confirmText }}</button>
             <button class="cancel" @click="cancel">{{ this.cancelText }}</button>
         </div>
-    </section>
+    </div>
 </template>
 
 <script>

@@ -6,7 +6,7 @@
 
 <script>
 import Message from "@/wfc/messages/message";
-import {parser as emojiParse} from "@/ui/util/emoji";
+import {parser as emojiParse} from "@/emoji/emoji";
 
 export default {
     name: "previewQuotedMessageView",

@@ -15,7 +15,7 @@
 
 <script>
 import Message from "@/wfc/messages/message";
-import helper from "@/ui/util/helper";
+import helper from "@/pages/util/helper";
 import {downloadFile} from "@/platformHelper";
 import {fs, isElectron, shell} from "@/platform";
 import store from "@/store";

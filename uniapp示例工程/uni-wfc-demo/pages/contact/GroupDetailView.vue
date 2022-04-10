@@ -1,11 +1,11 @@
 <template>
-    <section class="group-info-container">
+    <div class="group-info-container">
         <div class="group-info">
             <img :src="sharedContactState.currentGroup.portrait">
             <p>{{ $t('group.name', [sharedContactState.currentGroup.name]) }}</p>
         </div>
         <a @click="chat">{{ $t('group.chat') }}</a>
-    </section>
+    </div>
 </template>
 
 <script>

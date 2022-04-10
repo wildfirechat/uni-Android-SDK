@@ -52,15 +52,15 @@
 </template>
 
 <script>
-import UserListVue from "@/ui/main/user/UserListVue";
+import UserListVue from "@/pages/user/UserListVue";
 import ConversationInfo from "@/wfc/model/conversationInfo";
 import store from "@/store";
-import PickUserView from "@/ui/main/pick/PickUserView";
+import PickUserView from "@/pages/pick/PickUserView";
 import wfc from "@/wfc/client/wfc";
-import axios from "axios";
+// import axios from "axios";
 import GroupMemberType from "@/wfc/model/groupMemberType";
 import GroupType from "@/wfc/model/groupType";
-import ModifyGroupInfoType from "../../../wfc/model/modifyGroupInfoType";
+import ModifyGroupInfoType from "@/wfc/model/modifyGroupInfoType";
 
 export default {
     name: "GroupConversationInfoView",

@@ -62,9 +62,19 @@ export default {
 
     methods: {
         showConversation(conversationInfo) {
-            // store.setCurrentConversationInfo(conversationInfo);
+            store.setCurrentConversationInfo(conversationInfo);
             uni.navigateTo({
-                url:'',
+                url: '../conversation/ConversationView',
+                success: () => {
+                    console.log('jyj nav to ConversationView success');
+
+                },
+                fail: (err) => {
+                    console.log('jyj nav to ConversationView err', err);
+                },
+                complete: ()=>{
+                    console.log('jyj nav to ConversationView complete');
+                }
             });
         },
 

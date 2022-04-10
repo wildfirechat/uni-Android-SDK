@@ -1,5 +1,5 @@
 <template>
-    <section class="receipt-detail-container">
+    <div class="receipt-detail-container">
         <h1>{{ $t('message.receipt_detail') }}</h1>
         <h2>{{ $t('message.receipt_read_users') }}</h2>
         <p>{{ readUsersDesc() }}</p>
@@ -7,7 +7,7 @@
         <p>{{ receivedUsersDesc() }}</p>
         <h2>{{ $t('message.receipt_unreceived_users') }}</h2>
         <p>{{ unreceiveUsersDesc() }}</p>
-    </section>
+    </div>
 </template>
 
 <script>

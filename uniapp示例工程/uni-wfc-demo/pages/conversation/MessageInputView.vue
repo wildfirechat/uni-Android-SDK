@@ -1,6 +1,6 @@
 <template>
-    <section class="message-input-container">
-        <section class="input-action-container">
+    <div class="message-input-container">
+        <div class="input-action-container">
             <VEmojiPicker
                 id="emoji"
                 v-show="showEmojiDialog"
@@ -26,7 +26,7 @@
                 <li><i @click="startAudioCall" class="icon-ion-ios-telephone"></i></li>
                 <li><i @click="startVideoCall" class="icon-ion-ios-videocam"></i></li>
             </ul>
-        </section>
+        </div>
         <div @keydown.13="send($event)"
              @keydown.229="()=>{}"
              ref="input" class="input"
@@ -40,21 +40,21 @@
              v-on:tribute-replaced="onTributeReplaced"
              contenteditable="true">
         </div>
-        <vue-context ref="menu" :lazy="true">
-            <li>
-                <a @click.prevent="handlePaste($event, 'menu')">
-                    {{ $t('common.paste') }}
-                </a>
-            </li>
-            <li v-show="hasInputTextOrImage">
-                <a @click.prevent="copy">
-                    {{ $t('common.copy') }}
-                </a>
-            </li>
-            <li>
-                <a @click.prevent="cut">{{ $t('common.cut') }}</a>
-            </li>
-        </vue-context>
+<!--        <vue-context ref="menu" :lazy="true">-->
+<!--            <li>-->
+<!--                <a @click.prevent="handlePaste($event, 'menu')">-->
+<!--                    {{ $t('common.paste') }}-->
+<!--                </a>-->
+<!--            </li>-->
+<!--            <li v-show="hasInputTextOrImage">-->
+<!--                <a @click.prevent="copy">-->
+<!--                    {{ $t('common.copy') }}-->
+<!--                </a>-->
+<!--            </li>-->
+<!--            <li>-->
+<!--                <a @click.prevent="cut">{{ $t('common.cut') }}</a>-->
+<!--            </li>-->
+<!--        </vue-context>-->
         <QuoteMessageView
             v-if="quotedMessage !== null"
             style="padding: 10px 20px"
@@ -64,7 +64,7 @@
         <div v-if="muted" style="width: 100%; height: 100%; background: lightgrey; position: absolute; display: flex; justify-content: center; align-items: center">
             <p style="color: white">群禁言或者你被禁言</p>
         </div>
-    </section>
+    </div>
 </template>
 
 <script>
@@ -74,25 +74,24 @@ import store from "@/store";
 import {categoriesDefault, emojisDefault, VEmojiPicker} from "@imndx/v-emoji-picker"
 import ClickOutside from "vue-click-outside";
 import Tribute from "tributejs";
-import '../../../tribute.css'
 import ConversationType from "@/wfc/model/conversationType";
 import ConversationInfo from "@/wfc/model/conversationInfo";
 import GroupInfo from "@/wfc/model/groupInfo";
 import GroupMemberType from "@/wfc/model/groupMemberType";
 import QuoteInfo from "@/wfc/model/quoteInfo";
-import Draft from "@/ui/util/draft";
-import Mention from "../../../wfc/model/mention";
-import {parser as emojiParse} from '@/ui/util/emoji';
-import QuoteMessageView from "@/ui/main/conversation/message/QuoteMessageView";
+import Draft from "@/pages/util/draft";
+import Mention from "@/wfc/model/mention";
+import {parser as emojiParse} from '@/emoji/emoji';
+import QuoteMessageView from "@/pages/conversation/message/QuoteMessageView";
 import avenginekitproxy from "@/wfc/av/engine/avenginekitproxy";
-import {fileFromDataUri} from "@/ui/util/imageUtil";
+import {fileFromDataUri} from "@/pages/util/imageUtil";
 import StickerMessageContent from "@/wfc/messages/stickerMessageContent";
-import {config as emojiConfig} from "@/ui/main/conversation/EmojiAndStickerConfig";
-import PickUserView from "@/ui/main/pick/PickUserView";
+import {config as emojiConfig} from "@/pages/conversation/EmojiAndStickerConfig";
+import PickUserView from "@/pages/pick/PickUserView";
 import {ipcRenderer, isElectron} from "@/platform";
-import {copyText} from "../../util/clipboard";
-import EventType from "../../../wfc/client/wfcEvent";
-import IPCRendererEventType from "../../../ipcRendererEventType";
+import {copyText} from "@/pages/util/clipboard";
+import EventType from "@/wfc/client/wfcEvent";
+// import IPCRendererEventType from "@/ipcRendererEventType";
 
 // vue 不允许在computed里面有副作用
 // 和store.state.conversation.quotedMessage 保持同步
@@ -746,12 +745,13 @@ export default {
     },
     directives: {
         ClickOutside,
-        focus,
+        //focus,
     }
 };
 </script>
 
 <style lang='css' scoped>
+@import '../../tribute.css';
 .message-input-container {
     height: 100%;
     display: flex;

@@ -1,5 +1,5 @@
 <template>
-    <section>
+    <div>
         <ul>
             <li v-for="(groupedUser) in groupedUsers" :key="groupedUser.category">
                 <div ref="contactItem" class="contact-item">
@@ -44,7 +44,7 @@
                 </div>
             </li>
         </ul>
-    </section>
+    </div>
 </template>
 
 <script>

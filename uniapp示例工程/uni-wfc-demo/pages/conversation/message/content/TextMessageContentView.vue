@@ -7,7 +7,7 @@
 
 <script>
 import Message from "@/wfc/messages/message";
-import {parser as emojiParse} from "@/ui/util/emoji";
+import {parser} from "@/emoji/emoji";
 
 export default {
     name: "TextMessageContentView",
@@ -48,7 +48,8 @@ export default {
 
     computed: {
         textContent() {
-            let tmp = emojiParse(this.message.messageContent.digest(this.message));
+            let tmp = parser(this.message.messageContent.digest(this.message));
+            // let tmp = this.message.messageContent.digest(this.message);
             // pls refer to https://stackoverflow.com/questions/4522124/replace-leading-spaces-with-nbsp-in-javascript
             tmp = tmp.replace(/^[ \t]+/gm, function (x) {
                 return new Array(x.length + 1).join('&nbsp;')

@@ -1,12 +1,12 @@
 <template>
-    <section>
+    <div>
         <div class="message-time-container" v-bind:class="{checked:sharedPickState.messages.indexOf(message) >= 0}">
             <p v-if="this.message._showTime" class="time">{{ message._timeStr }}</p>
             <div class="message-content-container"
                  v-bind:class="{checked:sharedPickState.messages.indexOf(message) >= 0}">
-                <input id="checkbox" v-if="sharedConversationState.enableMessageMultiSelection" type="checkbox"
-                       class="checkbox"
-                       :value="message" placeholder="" v-model="sharedPickState.messages">
+<!--                <input id="checkbox" v-if="sharedConversationState.enableMessageMultiSelection" type="checkbox"-->
+<!--                       class="checkbox"-->
+<!--                       :value="message" placeholder="" v-model="sharedPickState.messages">-->
 
                 <div class="message-avatar-content-container">
                     <!-- 文件的进度条有点特殊，有进度的消息的进度条有点特殊 -->
@@ -27,45 +27,31 @@
                                           :show-close-button="false"/>
                     </div>
 
-                    <tippy
-                        :to="'infoTrigger' + this.message.messageId"
-                        interactive
-                        :animate-fill="false"
-                        placement="left"
-                        distant="7"
-                        theme="light"
-                        animation="fade"
-                        trigger="click"
-                    >
-                        <UserCardView v-on:close="closeUserCard" :user-info="message._from"/>
-                    </tippy>
-
-                    <img ref="userCardTippy"
-                         :name="'infoTrigger' + this.message.messageId"
+                    <img
                          class="avatar"
                          @click="onClickUserPortrait(message.from)"
                          draggable="false"
-                         :src="message._from.portrait">
+                         :src="message._from.portrait" alt="">
                 </div>
             </div>
             <p v-if="shouldShowMessageReceipt" class="receipt" @click="showMessageReceiptDetail">
                 {{ messageReceipt }}</p>
         </div>
-    </section>
+    </div>
 
 </template>
 
 <script>
-import UserCardView from "@/ui/main/user/UserCardView";
+import UserCardView from "@/pages/user/UserCardView";
 import Message from "@/wfc/messages/message";
-import MessageContentContainerView from "@/ui/main/conversation/message/MessageContentContainerView";
+import MessageContentContainerView from "@/pages/conversation/message/MessageContentContainerView";
 import store from "@/store";
-import LoadingView from "@/ui/common/LoadingView";
+import LoadingView from "@/pages/common/LoadingView";
 import wfc from "@/wfc/client/wfc";
 import ConversationType from "@/wfc/model/conversationType";
 import {gte} from "@/wfc/util/longUtil";
-import MessageReceiptDetailView from "@/ui/main/conversation/message/MessageReceiptDetailView";
-import QuoteMessageView from "@/ui/main/conversation/message/QuoteMessageView";
+import MessageReceiptDetailView from "@/pages/conversation/message/MessageReceiptDetailView";
+import QuoteMessageView from "@/pages/conversation/message/QuoteMessageView";
 import Config from "@/config";
 
 export default {
@@ -93,10 +79,6 @@ export default {
 
     },
     mounted() {
-        this.$parent.$on('contextMenuClosed', () => {
-            this.highLight = false;
-        });
-
         if (this.message.messageContent.quoteInfo) {
             let messageUid = this.message.messageContent.quoteInfo.messageUid;
             let msg = store.getMessageByUid(messageUid);
@@ -115,10 +97,6 @@ export default {
     methods: {
         onClickUserPortrait(userId) {
             wfc.getUserInfo(userId, true);
-        },
-        closeUserCard() {
-            console.log('closeUserCard', this.$refs["userCardTippy"]);
-            this.$refs["userCardTippy"]._tippy.hide();
         },
         resend() {
             wfc.deleteMessage(this.message.messageId);

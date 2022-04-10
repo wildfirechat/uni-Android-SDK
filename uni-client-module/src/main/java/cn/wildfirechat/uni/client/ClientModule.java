@@ -58,6 +58,7 @@ import cn.wildfirechat.remote.SendMessageCallback;
 import cn.wildfirechat.remote.UserSettingScope;
 import cn.wildfirechat.remote.WatchOnlineStateCallback;
 import cn.wildfirechat.uni.client.jsmodel.JSConversationInfo;
+import cn.wildfirechat.uni.client.jsmodel.JSMessage;
 import io.dcloud.feature.uniapp.AbsSDKInstance;
 import io.dcloud.feature.uniapp.annotation.UniJSMethod;
 import io.dcloud.feature.uniapp.common.UniModule;
@@ -282,7 +283,7 @@ public class ClientModule extends UniModule {
             @Override
             public void onSuccess(List<Message> messages) {
                 if (successCB != null) {
-                    successCB.invoke(JSONObject.toJSONString(messages, ClientUniAppHookProxy.serializeConfig));
+                    successCB.invoke(JSONObject.toJSONString(Util.messagesToJSMessages(messages), ClientUniAppHookProxy.serializeConfig));
                 }
             }
 
@@ -303,7 +304,7 @@ public class ClientModule extends UniModule {
             @Override
             public void onSuccess(Message messages) {
                 if (successCB != null) {
-                    successCB.invoke(JSONObject.toJSONString(messages, ClientUniAppHookProxy.serializeConfig));
+                    successCB.invoke(JSONObject.toJSONString(JSMessage.fromMessage(messages), ClientUniAppHookProxy.serializeConfig));
                 }
             }
 
@@ -863,7 +864,7 @@ public class ClientModule extends UniModule {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(Util.messagesToJSMessages(messageList), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)
@@ -895,7 +896,7 @@ public class ClientModule extends UniModule {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(Util.messagesToJSMessages(messageList), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)
@@ -924,7 +925,7 @@ public class ClientModule extends UniModule {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(Util.messagesToJSMessages(messageList), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)
@@ -955,47 +956,47 @@ public class ClientModule extends UniModule {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(Util.messagesToJSMessages(messageList), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)
     public String getMessage(long messageId) {
         Message message = ChatManager.Instance().getMessage(messageId);
-        return JSONObject.toJSONString(message, ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(JSMessage.fromMessage(message), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)
     public String getMessageByUid(String messageUid) {
         Message message = ChatManager.Instance().getMessageByUid(Long.parseLong(messageUid));
-        return JSONObject.toJSONString(message, ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(JSMessage.fromMessage(message), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)
     public String searchMessage(String strConv, String keyword) {
         Conversation conversation = parseObject(strConv, Conversation.class);
         List<Message> messageList = ChatManager.Instance().searchMessage(conversation, keyword, false, 500, 0);
-        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(Util.messagesToJSMessages(messageList), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)
     public String searchMessageEx(String strConv, String keyword, boolean desc, int limit, int offset) {
         Conversation conversation = parseObject(strConv, Conversation.class);
         List<Message> messageList = ChatManager.Instance().searchMessage(conversation, keyword, desc, limit, offset);
-        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(Util.messagesToJSMessages(messageList), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)
     public String searchMessageByTypes(String strConv, String keyword, List<Integer> contentTypes, boolean desc, int limit, int offset) {
         Conversation conversation = parseObject(strConv, Conversation.class);
         List<Message> messageList = ChatManager.Instance().searchMessageByTypes(conversation, keyword, contentTypes, desc, limit, offset);
-        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(Util.messagesToJSMessages(messageList), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = false)
     public String searchMessageByTypesAndTimes(String strConv, String keyword, List<Integer> contentTypes, long startTime, long endTime, boolean desc, int limit, int offset) {
         Conversation conversation = parseObject(strConv, Conversation.class);
         List<Message> messageList = ChatManager.Instance().searchMessageByTypesAndTimes(conversation, keyword, contentTypes, startTime, endTime, desc, limit, offset);
-        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(Util.messagesToJSMessages(messageList), ClientUniAppHookProxy.serializeConfig);
     }
 
     public String searchMessageEx2(List<Integer> convTypes, List<Integer> lines, List<Integer> contentTypes, String keyword, int fromIndex, boolean desc, int count) {
@@ -1025,7 +1026,7 @@ public class ClientModule extends UniModule {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        return JSONObject.toJSONString(messageList, ClientUniAppHookProxy.serializeConfig);
+        return JSONObject.toJSONString(Util.messagesToJSMessages(messageList), ClientUniAppHookProxy.serializeConfig);
     }
 
     @UniJSMethod(uiThread = true)

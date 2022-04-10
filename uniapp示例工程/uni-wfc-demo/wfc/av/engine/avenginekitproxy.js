@@ -8,7 +8,7 @@ import ConversationType from "../../model/conversationType";
 import MessageContentType from "../../messages/messageContentType";
 import wfc from "../../client/wfc";
 import MessageConfig from "../../client/messageConfig";
-import DetectRTC from 'detectrtc';
+// import DetectRTC from 'detectrtc';
 import Config from "../../../config";
 import {longValue, numberValue} from '../../util/longUtil'
 import Conversation from "../../../wfc/model/conversation";

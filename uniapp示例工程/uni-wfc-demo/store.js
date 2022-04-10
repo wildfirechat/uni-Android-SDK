@@ -18,7 +18,7 @@ import VideoMessageContent from "./wfc/messages/videoMessageContent";
 import FileMessageContent from "./wfc/messages/fileMessageContent";
 import MessageConfig from "./wfc/client/messageConfig";
 import PersistFlag from "./wfc/messages/persistFlag";
-// import ForwardType from "./ui/main/conversation/message/forward/ForwardType";
+import ForwardType from "@/pages/conversation/message/forward/ForwardType";
 import TextMessageContent from "./wfc/messages/textMessageContent";
 import SearchType from "./wfc/model/searchType";
 import Config from "./config";
@@ -478,6 +478,7 @@ let store = {
         }, (err) => {
             console.log('watchOnlineState error', err);
         })
+        console.log('jyj', 'set currentConversationInfo', conversationInfo)
         conversationState.currentConversationInfo = conversationInfo;
         conversationState.shouldAutoScrollToBottom = true;
         conversationState.currentConversationMessageList.length = 0;

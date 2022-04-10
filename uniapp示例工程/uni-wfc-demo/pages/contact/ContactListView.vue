@@ -1,5 +1,5 @@
 <template>
-    <section class="contact-list">
+    <div class="contact-list">
         <ul>
             <li>
                 <div @click="showNewFriends" class="category-item-container">
@@ -35,7 +35,7 @@
                              v-if="sharedContactState.expandFriendList"/>
             </li>
         </ul>
-    </section>
+    </div>
 </template>
 <script>
 import FriendRequestListView from "./FriendRequestListView";

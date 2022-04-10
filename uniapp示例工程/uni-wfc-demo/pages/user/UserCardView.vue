@@ -1,5 +1,5 @@
 <template>
-    <section @click.stop="" class="user-info-container">
+    <div @click.stop="" class="user-info-container">
         <div class="header">
             <div class="desc">
                 <h2>{{ userInfo.displayName }}</h2>
@@ -38,7 +38,7 @@
             <a v-if="isFriend" href="#"><i class="icon-ion-ios-chatboxes" @click="chat"></i></a>
             <a v-if="!isFriend" href="#"><i class="icon-ion-person-add" @click="addFriend"></i></a>
         </div>
-    </section>
+    </div>
 </template>
 
 <script>

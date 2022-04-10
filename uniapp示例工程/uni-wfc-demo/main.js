@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import App from './App'
 import store from "./store";
-import VueContext from 'vue-context';
+// import VueContext from 'vue-context';
 import VueI18n from 'vue-i18n'
 import {getItem} from "./pages/util/storageHelper";
 
@@ -9,8 +9,8 @@ Vue.config.productionTip = false
 
 App.mpType = 'app'
 
-Vue.use(VueContext);
-Vue.component("vue-context", VueContext)
+// Vue.use(VueContext);
+// Vue.component("vue-context", VueContext)
 
 Vue.use(VueI18n)
 

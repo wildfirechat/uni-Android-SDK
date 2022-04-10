@@ -1,11 +1,11 @@
 <template>
     <div class="pick-conversation-container">
-        <section class="conversation-list-panel">
+        <div class="conversation-list-panel">
             <div class="input-container">
                 <input type="text" :placeholder="$t('common.search')"
                        v-model="query">
             </div>
-            <section class="conversation-list-container">
+            <div class="conversation-list-container">
                 <div class="create-group" @click="showForwardByCreateConversationModal">
                     <p>{{ $t('conversation.create_group') }}</p>
                 </div>
@@ -24,9 +24,9 @@
                         </div>
                     </li>
                 </ul>
-            </section>
-        </section>
-        <section class="checked-conversation-list-container">
+            </div>
+        </div>
+        <div class="checked-conversation-list-container">
             <header>
                 <h2>{{ $t('conversation.forward_title') }}</h2>
                 <span
@@ -53,13 +53,13 @@
                 <button @click="cancel" class="cancel">{{ $t('common.cancel') }}</button>
                 <button @click="confirm" class="confirm">{{ $t('common.send') }}</button>
             </footer>
-        </section>
+        </div>
     </div>
 </template>
 
 <script>
 import store from "@/store";
-import ForwardMessageView from "@/ui/main/conversation/message/forward/ForwardMessageView";
+import ForwardMessageView from "@/pages/conversation/message/forward/ForwardMessageView";
 
 export default {
     name: "ForwardMessageByPickConversationView",
