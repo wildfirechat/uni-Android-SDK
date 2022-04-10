@@ -458,7 +458,6 @@ public class ChatManager {
      * @param port 服务器port
      */
     private void onConnectToServer(final String host, final String ip, final int port) {
-        Log.e("jyj", "connectToServer " + host + ip + port);
         mainHandler.post(new Runnable() {
             @Override
             public void run() {

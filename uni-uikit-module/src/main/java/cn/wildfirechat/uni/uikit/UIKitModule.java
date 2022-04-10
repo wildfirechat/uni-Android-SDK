@@ -113,7 +113,6 @@ public class UIKitModule extends UniModule {
 
     @UniJSMethod(uiThread = true)
     public void testStartActivity() {
-        Log.e("jyj", "testStartActivity");
 //        conversation = intent.getParcelableExtra("conversation");
 //        String conversationTitle = intent.getStringExtra("conversationTitle");
         Conversation conversation = new Conversation(Conversation.ConversationType.Single, "abceddd", 0);
@@ -123,7 +122,6 @@ public class UIKitModule extends UniModule {
         intent.putExtra("conversation", conversation);
         intent.putExtra("conversationTitle", title);
         context.startActivity(intent);
-        Log.e("jyj", "testStartActivity End");
     }
 
     private void setupWFCDirs() {

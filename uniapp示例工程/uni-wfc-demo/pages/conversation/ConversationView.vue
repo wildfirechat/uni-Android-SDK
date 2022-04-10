@@ -670,7 +670,6 @@ export default {
     },
 
     mounted() {
-        console.log('conversationView mounted', this.sharedConversationState, this.sharedConversationState.currentConversationMessageList);
         // this.popupItem = this.$refs['setting'];
         // document.addEventListener('mouseup', this.dragEnd);
         // document.addEventListener('mousemove', this.drag);

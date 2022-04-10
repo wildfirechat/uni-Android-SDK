@@ -48,7 +48,7 @@ public class UIKitUniAppHookProxy implements UniAppHookProxy {
     @Override
     public void onCreate(Application application) {
         //initWFClient(application);
-        Log.e("jyj", "KitUniAppHook onCreate");
+        Log.e(TAG, "KitUniAppHook onCreate");
     }
 
     private void initWFClient(Application application) {

@@ -3,7 +3,7 @@ import Vue from 'vue'
 import wfc from "./wfc/client/wfc";
 import EventType from "./wfc/client/wfcEvent";
 import ConversationType from "./wfc/model/conversationType";
-import {eq, gt, numberValue} from "./wfc/util/longUtil";
+import {eq, gt, numberValue, stringValue} from "./wfc/util/longUtil";
 import helper from "./pages/util/helper";
 import convert from './vendor/pinyin'
 import GroupType from "./wfc/model/groupType";
@@ -11,20 +11,16 @@ import GroupType from "./wfc/model/groupType";
 import MessageContentMediaType from "./wfc/messages/messageContentMediaType";
 import Conversation from "./wfc/model/conversation";
 import MessageContentType from "./wfc/messages/messageContentType";
-import MessageStatus from './wfc/messages/messageStatus';
 import Message from "./wfc/messages/message";
 import ImageMessageContent from "./wfc/messages/imageMessageContent";
 import VideoMessageContent from "./wfc/messages/videoMessageContent";
 import FileMessageContent from "./wfc/messages/fileMessageContent";
-import MessageConfig from "./wfc/client/messageConfig";
-import PersistFlag from "./wfc/messages/persistFlag";
 import ForwardType from "@/pages/conversation/message/forward/ForwardType";
 import TextMessageContent from "./wfc/messages/textMessageContent";
 import SearchType from "./wfc/model/searchType";
 import Config from "./config";
 import {getItem, setItem} from "./pages/util/storageHelper";
 import CompositeMessageContent from "./wfc/messages/compositeMessageContent";
-import {stringValue} from "./wfc/util/longUtil";
 // import {getConversationPortrait} from "./ui/util/imageUtil";
 import DismissGroupNotification from "./wfc/messages/notification/dismissGroupNotification";
 import KickoffGroupMemberNotification from "./wfc/messages/notification/kickoffGroupMemberNotification";
@@ -468,18 +464,22 @@ let store = {
         if (conversationState.currentConversationInfo && conversationState.currentConversationInfo.conversation.equal(conversationInfo.conversation)) {
             return;
         }
-        let conversation = conversationInfo.conversation;
-        wfc.watchOnlineState(conversation.type, [conversation.target], 1000, (states) => {
-            states.forEach((e => {
-                miscState.userOnlineStateMap.set(e.userId, e);
-            }))
-            this._patchCurrentConversationOnlineStatus();
 
-        }, (err) => {
-            console.log('watchOnlineState error', err);
-        })
-        console.log('jyj', 'set currentConversationInfo', conversationInfo)
         conversationState.currentConversationInfo = conversationInfo;
+        let conversation = conversationInfo.conversation;
+        if (conversation.type === ConversationType.Group || (conversation.type === ConversationType.Single && !wfc.isMyFriend(conversation.target))) {
+            wfc.watchOnlineState(conversation.type, [conversation.target], 1000, (states) => {
+                states.forEach((e => {
+                    miscState.userOnlineStateMap.set(e.userId, e);
+                }))
+                this._patchCurrentConversationOnlineStatus();
+
+            }, (err) => {
+                console.log('watchOnlineState error', err);
+            })
+        } else {
+            this._patchCurrentConversationOnlineStatus();
+        }
         conversationState.shouldAutoScrollToBottom = true;
         conversationState.currentConversationMessageList.length = 0;
         conversationState.currentConversationOldestMessageId = 0;
@@ -654,7 +654,7 @@ let store = {
         let msg;
         for (let i = 0; i < mediaMsgs.length; i++) {
             msg = mediaMsgs[i];
-            if (eq(msg.messageUid,  focusMessageUid)) {
+            if (eq(msg.messageUid, focusMessageUid)) {
                 conversationState.previewMediaIndex = i;
             }
             conversationState.previewMediaItems.push({
