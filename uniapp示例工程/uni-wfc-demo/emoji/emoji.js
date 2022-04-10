@@ -387,14 +387,7 @@ function parser(text) {
     //     text = decodeText = text.split(`${e}`).join(`<a target="_blank" class="${className}"></a>`);
     // });
 
-    console.log('emoji ../..', uEmojiParser.parse );
-    let emoji  = '';
-    try {
-        emoji = uEmojiParser.parse(decodeText);
-    }catch (e){
-        console.log(e);
-    }
-    console.log('emoji uEmojiParser end' );
+    let emoji = uEmojiParser.parse(decodeText);
     emoji = emoji.replace(/src="https:\/\/twemoji\.maxcdn\.com\/v\/[0-9.]+\//g, 'src="' + twemoji_base_url)
     return emoji;
 }

@@ -752,7 +752,6 @@ export default {
 
     computed: {
         conversationTitle() {
-            console.log('jyj', "conversationTitle", this.sharedConversationState.currentConversationInfo)
             let info = this.sharedConversationState.currentConversationInfo;
             return info.conversation._target._displayName;
         },
