@@ -3,8 +3,7 @@
         <!--    <i class="icon-ion-android-volume-up"></i>-->
         <!--    <span> {{ duration }} </span>-->
 
-        <audio preload="auto" controls controlsList="nodownload">
-            <source :src="remotePath" type="audio/mp4"/>
+        <audio style="text-align: left" :src="remotePath" :name="duration" controls>
         </audio>
     </div>
 </template>
@@ -54,7 +53,7 @@ export default {
             } else {
                 seconds = 60;
             }
-            return seconds;
+            return '时长：' + seconds;
         },
     }
 }
