@@ -4,19 +4,6 @@
             <h1>^~^</h1>
         </div>
         <div v-else class="conversation-container">
-            <header>
-                <div class="title-container">
-                    <div>
-                        <h1 class="single-line" @click.stop="toggleConversationInfo">{{ conversationTitle }}</h1>
-                        <p class="single-line user-online-status">{{ targetUserOnlineStateDesc }}</p>
-                    </div>
-                    <a href="#"><i class="icon-ion-ios-settings-strong"
-                                   style="display: inline-block"
-                                   v-bind:style="{marginTop: '0'}"
-                                   ref="setting"
-                                   @click="toggleConversationInfo"/></a>
-                </div>
-            </header>
             <div ref="conversationContentContainer" class="conversation-content-container"
                  @dragover="dragEvent($event, 'dragover')"
                  @dragleave="dragEvent($event, 'dragleave')"
@@ -24,20 +11,9 @@
                  @drop="dragEvent($event, 'drop')"
                  :dummy_just_for_reactive="currentVoiceMessage"
             >
-                <div v-show="dragAndDropEnterCount > 0" class="drag-drop-container">
-                    <div class="drag-drop">
-                        <p>{{ $t('conversation.drag_to_send_to', [conversationTitle]) }}</p>
-                    </div>
-                </div>
                 <div ref="conversationMessageList" class="conversation-message-list" v-on:scroll="onScroll"
                      infinite-wrapper>
-<!--                    <infinite-loading :identifier="loadingIdentifier" force-use-infinite-wrapper direction="top"-->
-<!--                                      @infinite="infiniteHandler">-->
-<!--                        &lt;!&ndash;            <template slot="spinner">加载中...</template>&ndash;&gt;-->
-<!--                        <template slot="no-more">{{ $t('conversation.no_more_message') }}</template>-->
-<!--                        <template slot="no-results">{{ $t('conversation.all_message_load') }}</template>-->
-<!--                    </infinite-loading>-->
-                    <ul >
+                    <ul>
                         <!--todo item.messageId or messageUid as key-->
                         <li v-for="(message) in sharedConversationState.currentConversationMessageList"
                             :key="message.messageId">
@@ -58,27 +34,28 @@
                 </div>
                 <div v-if="sharedConversationState.inputtingUser" class="inputting-container">
                     <img class="avatar" :src="sharedConversationState.inputtingUser.portrait"/>
-<!--                    <ScaleLoader :color="'#d2d2d2'" :height="'15px'" :width="'3px'"/>-->
+                    <!--                    <ScaleLoader :color="'#d2d2d2'" :height="'15px'" :width="'3px'"/>-->
                 </div>
                 <div v-show="!sharedConversationState.enableMessageMultiSelection" v-on:mousedown="dragStart"
                      class="divider-handler"></div>
                 <MessageInputView :conversationInfo="sharedConversationState.currentConversationInfo"
                                   v-show="!sharedConversationState.enableMessageMultiSelection"
+                                  class="message-input-container"
                                   ref="messageInputView"
-                                  />
+                />
                 <MultiSelectActionView v-show="sharedConversationState.enableMessageMultiSelection"/>
-<!--                <SingleConversationInfoView-->
-<!--                    v-if="showConversationInfo &&  sharedConversationState.currentConversationInfo.conversation.type === 0"-->
-<!--                    :conversation-info="sharedConversationState.currentConversationInfo"-->
-<!--                    v-bind:class="{ active: showConversationInfo }"-->
-<!--                    class="conversation-info-container"-->
-<!--                />-->
-<!--                <GroupConversationInfoView-->
-<!--                    v-if="showConversationInfo &&  sharedConversationState.currentConversationInfo.conversation.type === 1"-->
-<!--                    :conversation-info="sharedConversationState.currentConversationInfo"-->
-<!--                    v-bind:class="{ active: showConversationInfo }"-->
-<!--                    class="conversation-info-container"-->
-<!--                />-->
+                <!--                <SingleConversationInfoView-->
+                <!--                    v-if="showConversationInfo &&  sharedConversationState.currentConversationInfo.conversation.type === 0"-->
+                <!--                    :conversation-info="sharedConversationState.currentConversationInfo"-->
+                <!--                    v-bind:class="{ active: showConversationInfo }"-->
+                <!--                    class="conversation-info-container"-->
+                <!--                />-->
+                <!--                <GroupConversationInfoView-->
+                <!--                    v-if="showConversationInfo &&  sharedConversationState.currentConversationInfo.conversation.type === 1"-->
+                <!--                    :conversation-info="sharedConversationState.currentConversationInfo"-->
+                <!--                    v-bind:class="{ active: showConversationInfo }"-->
+                <!--                    class="conversation-info-container"-->
+                <!--                />-->
 
                 <!--                <vue-context ref="menu" v-slot="{data:message}" :close-on-scroll="true" v-on:close="onMenuClose">-->
                 <!--                    &lt;!&ndash;          更多menu item&ndash;&gt;-->
@@ -137,13 +114,14 @@ import NotificationMessageContent from "@/wfc/messages/notification/notification
 import TextMessageContent from "@/wfc/messages/textMessageContent";
 import store from "@/store";
 import wfc from "@/wfc/client/wfc";
-import {numberValue} from "@/wfc/util/longUtil";
+import {numberValue, stringValue} from "@/wfc/util/longUtil";
 // import InfiniteLoading from 'vue-infinite-loading';
 import MultiSelectActionView from "@/pages/conversation/MessageMultiSelectActionView";
 // import ForwardMessageByPickConversationView from "@/pages/conversation/message/forward/ForwardMessageByPickConversationView";
 // import ForwardMessageByCreateConversationView from "@/pages/conversation/message/forward/ForwardMessageByCreateConversationView";
-// import ScaleLoader from 'vue-spinner/src/ScaleLoader'
+import ScaleLoader from 'vue-spinner/src/ScaleLoader'
 import ForwardType from "@/pages/conversation/message/forward/ForwardType";
+// import localStorageEmitter from "../../../ipc/localStorageEmitter";
 import {fs, isElectron, shell} from "@/platform";
 import FileMessageContent from "@/wfc/messages/fileMessageContent";
 import ImageMessageContent from "@/wfc/messages/imageMessageContent";
@@ -151,14 +129,11 @@ import ImageMessageContent from "@/wfc/messages/imageMessageContent";
 import Message from "@/wfc/messages/message";
 // import {downloadFile} from "@/platformHelper";
 import VideoMessageContent from "@/wfc/messages/videoMessageContent";
-// import localStorageEmitter from "../../../ipc/localStorageEmitter";
-import {remote} from "@/platform";
 import SoundMessageContent from "@/wfc/messages/soundMessageContent";
 import MessageContentType from "@/wfc/messages/messageContentType";
 // import BenzAMRRecorder from "benz-amr-recorder";
 // import axios from "axios";
 import FavItem from "@/wfc/model/favItem";
-import {stringValue} from "@/wfc/util/longUtil";
 import ConversationType from "@/wfc/model/conversationType";
 import GroupMemberType from "@/wfc/model/groupMemberType";
 import CompositeMessageContent from "@/wfc/messages/compositeMessageContent";
@@ -175,7 +150,7 @@ export default {
         GroupConversationInfoView,
         SingleConversationInfoView,
         // InfiniteLoading,
-        // ScaleLoader,
+        ScaleLoader,
     },
     // props: ["conversation"],
     data() {
@@ -304,7 +279,7 @@ export default {
             //     }
             // }
             // hide message context menu
-            this.$refs.menu && this.$refs.menu.close();
+            // this.$refs.menu && this.$refs.menu.close();
 
             // 当用户往上滑动一段距离之后，收到新消息，不自动滚到到最后
             if (e.target.scrollHeight > e.target.clientHeight + e.target.scrollTop + e.target.clientHeight / 2) {
@@ -712,6 +687,10 @@ export default {
         //             ev.reply('inviteConferenceParticipantCancel')
         //         });
         // });
+
+        uni.setNavigationBarTitle({
+            title: this.targetUserOnlineStateDesc ? this.conversationTitle + `(${this.targetUserOnlineStateDesc})` : this.conversationTitle
+        });
     },
 
     beforeDestroy() {
@@ -829,7 +808,7 @@ export default {
 }
 
 .conversation-container {
-    height: 100%;
+    height: 100vh;
     display: flex;
     flex-direction: column;
 }

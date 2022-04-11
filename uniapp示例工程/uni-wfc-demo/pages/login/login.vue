@@ -27,7 +27,8 @@
 <script>
 import wfc from "../../wfc/client/wfc";
 import Config from '../../config';
-import {setItem} from "../util/storageHelper";
+import {getItem, setItem} from "../util/storageHelper";
+import ConnectionStatus from "../../wfc/client/connectionStatus";
 
 export default {
   data() {
@@ -41,10 +42,27 @@ export default {
   components: {},
   props: {},
     onShow(){
-      let userId = 'EPhwEwgg';
-      let tokne = 'tOi3KkHT+mFNRN1GacssK29YgcK/oCl/Os0IE53dZkNAeIdrevILfL0WIytwJbYAVdi1CNoyU1yAxqhKzxTboWivB+R1do3J2Os/QCUpETc2H1Eo9TZgrt1UUyYR2FWc9GVQV9StCpjvv0AunLc+2OmwJWfoel/2Vg56aKJjEYc='
-        if (tokne){
-            wfc.connect(userId, tokne);
+      let status = wfc.getConnectionStatus();
+      if (status === ConnectionStatus.ConnectionStatusConnected){
+          console.log('connected, switch to ConversationListView');
+          uni.switchTab({
+              url: '../conversationList/ConversationListView',
+              success:()=>{
+                  console.log('to conversation list success');
+              },
+              fail: e => {
+                  console.log('to conversation list error', e);
+              },
+              complete: () => {
+                  console.log('switch tab complete')
+              }
+          });
+          return
+      }
+      let userId = getItem('userId');
+      let token = getItem('token')
+        if (token){
+            wfc.connect(userId, token);
             uni.switchTab({
                 url: '../conversationList/ConversationListView',
                 success:()=>{
@@ -106,6 +124,8 @@ export default {
               let userId = loginResult.result.userId;
               let token = loginResult.result.token;
               wfc.connect(userId, token);
+              setItem('userId', userId);
+              setItem('token', token)
 
               uni.switchTab({
                 url: '../conversationList/ConversationListView',

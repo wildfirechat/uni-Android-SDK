@@ -19,7 +19,7 @@ import ForwardType from "@/pages/conversation/message/forward/ForwardType";
 import TextMessageContent from "./wfc/messages/textMessageContent";
 import SearchType from "./wfc/model/searchType";
 import Config from "./config";
-import {getItem, setItem} from "./pages/util/storageHelper";
+import {getItem, removeItem, setItem} from "./pages/util/storageHelper";
 import CompositeMessageContent from "./wfc/messages/compositeMessageContent";
 // import {getConversationPortrait} from "./ui/util/imageUtil";
 import DismissGroupNotification from "./wfc/messages/notification/dismissGroupNotification";
@@ -192,6 +192,13 @@ let store = {
 
             } else if (status === ConnectionStatus.ConnectionStatusLogout) {
                 _reset();
+            } else if (status === ConnectionStatus.ConnectionStatusSecretKeyMismatch
+                || status === ConnectionStatus.ConnectionStatusLogout
+                || status === ConnectionStatus.ConnectionStatusTokenIncorrect
+                || status === ConnectionStatus.ConnectionStatusRejected) {
+                removeItem("userId");
+                removeItem('token')
+                _reset();
             }
         });
 
@@ -243,7 +250,9 @@ let store = {
             }
         });
 
+        console.log('store', 'listen receiveMessage')
         wfc.eventEmitter.on(EventType.ReceiveMessage, (msg, hasMore) => {
+            console.log('receiveMessage', hasMore);
             if (!hasMore) {
                 this._loadDefaultConversationList();
             }
@@ -382,6 +391,10 @@ let store = {
                 conversationState.currentConversationRead = new Map(wfc.getConversationRead(conversationState.currentConversationInfo.conversation));
             }
         });
+
+        if (wfc.getConnectionStatus() === ConnectionStatus.ConnectionStatusConnected){
+            this._loadDefaultData();
+        }
 
     },
 
