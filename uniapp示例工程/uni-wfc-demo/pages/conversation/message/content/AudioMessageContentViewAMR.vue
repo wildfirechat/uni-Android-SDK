@@ -37,6 +37,7 @@ export default {
         if (this.duration) {
             let width = Math.ceil(this.duration / 60 * 300);
             width = width < 70 ? 70 : width;
+			console.log('audo message Content', this.$refs.container);
             this.$refs.container.style.setProperty('--voice-width', width + 'px')
         }
     },

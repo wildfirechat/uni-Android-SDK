@@ -62,10 +62,10 @@
                 </div>
                 <div v-show="!sharedConversationState.enableMessageMultiSelection" v-on:mousedown="dragStart"
                      class="divider-handler"></div>
-<!--                <MessageInputView :conversationInfo="sharedConversationState.currentConversationInfo"-->
-<!--                                  v-show="!sharedConversationState.enableMessageMultiSelection"-->
-<!--                                  ref="messageInputView"-->
-<!--                                  class="message-input-container"/>-->
+                <MessageInputView :conversationInfo="sharedConversationState.currentConversationInfo"
+                                  v-show="!sharedConversationState.enableMessageMultiSelection"
+                                  ref="messageInputView"
+                                  />
                 <MultiSelectActionView v-show="sharedConversationState.enableMessageMultiSelection"/>
 <!--                <SingleConversationInfoView-->
 <!--                    v-if="showConversationInfo &&  sharedConversationState.currentConversationInfo.conversation.type === 0"-->
@@ -924,11 +924,6 @@ export default {
 .user-online-status {
     color: gray;
     font-size: 10px;
-}
-
-.message-input-container {
-    height: 200px;
-    min-height: 200px;
 }
 
 .conversation-info-container {
