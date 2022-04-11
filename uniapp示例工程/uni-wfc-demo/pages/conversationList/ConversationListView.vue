@@ -66,14 +66,14 @@ export default {
             uni.navigateTo({
                 url: '../conversation/ConversationView',
                 success: () => {
-                    console.log('jyj nav to ConversationView success');
+                    console.log('nav to ConversationView success');
 
                 },
                 fail: (err) => {
-                    console.log('jyj nav to ConversationView err', err);
+                    console.log('nav to ConversationView err', err);
                 },
                 complete: ()=>{
-                    console.log('jyj nav to ConversationView complete');
+                    console.log('nav to ConversationView complete');
                 }
             });
         },

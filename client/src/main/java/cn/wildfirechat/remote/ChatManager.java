@@ -179,8 +179,8 @@ public class ChatManager {
     private Handler workHandler;
     private String deviceToken;
     // just for debug
-    private String clientId = "b67297dba73328c81649545695002";
-//    private String clientId = null;
+//    private String clientId = "b67297dba73328c81649545695002";
+    private String clientId = null;
     private int pushType;
     private Map<Integer, Class<? extends MessageContent>> messageContentMap = new HashMap<>();
     private boolean isLiteMode = false;

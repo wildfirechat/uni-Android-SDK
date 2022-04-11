@@ -6,7 +6,6 @@
                 v-show="showEmojiDialog"
                 labelSearch="Search"
                 lang="pt-BR"
-                v-click-outside="hideEmojiView"
                 :customEmojis="emojis"
                 :customCategories="emojiCategories"
                 @select="onSelectEmoji"
@@ -14,8 +13,8 @@
             <ul>
                 <li><i id="showEmoji" @click="toggleEmojiView" class="icon-ion-ios-heart"></i></li>
                 <li><i @click="pickFile" class="icon-ion-android-attach"></i>
-                    <input ref="fileInput" @change="onPickFile($event)" class="icon-ion-android-attach" type="file"
-                           style="display: none">
+<!--                    <input ref="fileInput" @change="onPickFile($event)" class="icon-ion-android-attach" type="file"-->
+<!--                           style="display: none">-->
                 </li>
                 <li v-if="sharedMiscState.isElectron"><i id="screenShot" @click="screenShot"
                                                          class="icon-ion-scissors"></i></li>
@@ -27,10 +26,8 @@
                 <li><i @click="startVideoCall" class="icon-ion-ios-videocam"></i></li>
             </ul>
         </div>
-        <div @keydown.13="send($event)"
-             @keydown.229="()=>{}"
+        <div @keydown.enter="send($event)"
              ref="input" class="input"
-             @paste="handlePaste"
              draggable="false"
              title="Enter发送，Ctrl+Enter换行"
              autofocus
@@ -72,7 +69,7 @@ import wfc from "@/wfc/client/wfc";
 import TextMessageContent from "@/wfc/messages/textMessageContent";
 import store from "@/store";
 import {categoriesDefault, emojisDefault, VEmojiPicker} from "@imndx/v-emoji-picker"
-import ClickOutside from "vue-click-outside";
+// import ClickOutside from "vue-click-outside";
 import Tribute from "tributejs";
 import ConversationType from "@/wfc/model/conversationType";
 import ConversationInfo from "@/wfc/model/conversationInfo";
@@ -81,7 +78,7 @@ import GroupMemberType from "@/wfc/model/groupMemberType";
 import QuoteInfo from "@/wfc/model/quoteInfo";
 import Draft from "@/pages/util/draft";
 import Mention from "@/wfc/model/mention";
-import {parser as emojiParse} from '@/emoji/emoji';
+import {parser} from '@/emoji/emoji';
 import QuoteMessageView from "@/pages/conversation/message/QuoteMessageView";
 import avenginekitproxy from "@/wfc/av/engine/avenginekitproxy";
 import {fileFromDataUri} from "@/pages/util/imageUtil";
@@ -147,33 +144,6 @@ export default {
             store.quoteMessage(null)
         },
 
-        async handlePaste(e, source) {
-            let text;
-            e.preventDefault();
-            if ((e.originalEvent || e).clipboardData) {
-                text = (e.originalEvent || e).clipboardData.getData('text/plain');
-            } else {
-                text = await navigator.clipboard.readText();
-            }
-            if (text && text.trim()) {
-                document.execCommand('insertText', false, text);
-                // Safari 浏览器 execCommand 失效，可以采用下面这种方式处理粘贴
-                // this.$refs.input.innerText += text;
-                return;
-            }
-            if (isElectron()) {
-                let args = ipcRenderer.sendSync('file-paste');
-                if (args.hasImage) {
-                    document.execCommand('insertText', false, ' ');
-                    document.execCommand('insertImage', false, 'local-resource://' + args.filename);
-                } else if (args.hasFile) {
-                    args.files.forEach(file => {
-                        store.sendFile(this.conversationInfo.conversation, file)
-                    })
-                }
-            }
-        },
-
         mention(groupId, memberId) {
             let displayName = wfc.getGroupMemberDisplayName(groupId, memberId);
             this.mentions.push({
@@ -187,12 +157,12 @@ export default {
             } else {
                 mentionValue = ' @' + displayName + ' ';
             }
-            document.execCommand('insertText', false, mentionValue);
+            //document.execCommand('insertText', false, mentionValue);
         },
 
         insertText(text) {
             // this.$refs['input'].innerText = text;
-            document.execCommand('insertText', false, text);
+            //document.execCommand('insertText', false, text);
         },
 
         copy() {
@@ -208,6 +178,7 @@ export default {
         },
 
         send(e) {
+            console.log('send...')
             if (this.tribute && this.tribute.isActive || this.tributeReplaced) {
                 this.tributeReplaced = false;
                 return;
@@ -239,20 +210,20 @@ export default {
             if (e.ctrlKey) {
                 // e.preventDefault();
                 // this.refs.input.innerHTML = this.refs.input.innerHTML+ "<div><br></div>";
-                document.execCommand('InsertHTML', true, '<br>');
-                if (window.getSelection) {
-                    let selection = window.getSelection(),
-                        range = selection.getRangeAt(0),
-                        br = document.createElement("br");
-                    range.deleteContents();
-                    range.insertNode(br);
-                    range.setStartAfter(br);
-                    range.setEndAfter(br);
-                    // range.collapse(false);
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                    // return false;
-                }
+                // document.execCommand('InsertHTML', true, '<br>');
+                // if (window.getSelection) {
+                //     let selection = window.getSelection(),
+                //         range = selection.getRangeAt(0),
+                //         br = document.createElement("br");
+                //     range.deleteContents();
+                //     range.insertNode(br);
+                //     range.setStartAfter(br);
+                //     range.setEndAfter(br);
+                //     // range.collapse(false);
+                //     selection.removeAllRanges();
+                //     selection.addRange(range);
+                //     // return false;
+                // }
                 return;
             }
 
@@ -349,8 +320,8 @@ export default {
                 return;
             }
 
-            this.$refs.input.focus();
-            this.insertHTML(emojiParse(emoji.data));
+            // this.$refs.input.focus();
+            // this.insertHTML(parser(emoji.data));
             this.focusInput();
         },
 
@@ -562,25 +533,26 @@ export default {
 
         focusInput() {
             this.$nextTick(() => {
-                this.$refs['input'].focus();
+                // this.$refs['input'].focus();
                 console.log('focus end')
             })
         },
 
         moveCursorToEnd(contentEditableDiv) {
 
-            let range = document.createRange();
-            range.selectNodeContents(contentEditableDiv);
-            range.collapse(false);
-            let sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
+            // let range = document.createRange();
+            // range.selectNodeContents(contentEditableDiv);
+            // range.collapse(false);
+            // let sel = window.getSelection();
+            // sel.removeAllRanges();
+            // sel.addRange(range);
         },
 
         restoreDraft() {
             let draft = Draft.getConversationDraftEx(this.conversationInfo);
             store.quoteMessage(draft.quotedMessage);
             let input = this.$refs['input'];
+            console.log('xxx restoreDraft', input, this.$refs);
             input.innerHTML = draft.text.replace(/ /g, '&nbsp');
             this.moveCursorToEnd(input);
         },
@@ -670,16 +642,7 @@ export default {
         this.lastConversationInfo = this.conversationInfo;
         this.focusInput();
 
-        if (isElectron()) {
-            ipcRenderer.on('screenshots-ok', (event, args) => {
-                console.log('screenshots-ok', args)
-                if (args.filePath) {
-                    setTimeout(() => {
-                        document.execCommand('insertImage', false, 'local-resource://' + args.filePath);
-                    }, 100)
-                }
-            });
-        }
+        console.log('messageinputView mounted ', this.$refs)
         this.storeDraftIntervalId = setInterval(() => {
             this.storeDraft(this.conversationInfo, this.quotedMessage);
         }, 5 * 1000)
@@ -741,10 +704,10 @@ export default {
 
     components: {
         QuoteMessageView,
-        VEmojiPicker
+        // VEmojiPicker
     },
     directives: {
-        ClickOutside,
+        // ClickOutside,
         //focus,
     }
 };
