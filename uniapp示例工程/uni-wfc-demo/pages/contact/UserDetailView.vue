@@ -54,7 +54,7 @@ export default {
         }
     },
 
-    mounted(){
+    mounted() {
         this.user = this.sharedStateContact.currentFriend;
         // uni.setNavigationBarTitle({
         //     title:this.user._displayName,
@@ -65,7 +65,16 @@ export default {
         chat() {
             let conversation = new Conversation(ConversationType.Single, this.user.uid, 0);
             store.setCurrentConversation(conversation);
-            this.$router.replace('/home');
+            uni.navigateTo({
+                url: '../conversation/ConversationView',
+                success: () => {
+                    console.log('nav to conversationView success');
+
+                },
+                fail: (err) => {
+                    console.log('nav to conversationView err', err);
+                }
+            })
         },
         updateFriendAlias() {
             let friendAlias = this.$refs.input.value;

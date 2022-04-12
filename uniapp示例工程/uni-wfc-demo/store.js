@@ -399,6 +399,7 @@ let store = {
     },
 
     _loadDefaultData() {
+        console.log('store.js', '_loadDefaultData');
         this._loadFavGroupList();
         this._loadFriendList();
         this._loadFavContactList();

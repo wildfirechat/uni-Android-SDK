@@ -36,7 +36,11 @@ export default {
                 this.$parent.previewCompositeMessage(message.messageUid);
             } else {
                 console.log('preview', message);
-                store.previewMessage(message, true);
+                //store.previewMessage(message, true);
+                uni.previewImage({
+                    current: 1,
+                    urls: [this.message.messageContent.remotePath]
+                });
             }
         },
         onImageLoaded() {

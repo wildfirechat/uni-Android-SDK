@@ -4,9 +4,9 @@
             <p v-if="this.message._showTime" class="time">{{ message._timeStr }}</p>
             <div class="message-content-container"
                  v-bind:class="{checked:sharedPickState.messages.indexOf(message) >= 0}">
-<!--                <input id="checkbox" v-if="sharedConversationState.enableMessageMultiSelection" type="checkbox"-->
-<!--                       class="checkbox"-->
-<!--                       :value="message" placeholder="" v-model="sharedPickState.messages">-->
+                <checkbox id="checkbox" v-if="sharedConversationState.enableMessageMultiSelection" type="checkbox"
+                       class="checkbox"
+                       :value="message" placeholder="" v-model="sharedPickState.messages"/>
 
                 <div class="message-avatar-content-container">
                     <!-- 文件的进度条有点特殊，有进度的消息的进度条有点特殊 -->

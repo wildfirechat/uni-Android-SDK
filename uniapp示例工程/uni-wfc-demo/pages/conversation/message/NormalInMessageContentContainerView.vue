@@ -5,9 +5,9 @@
             <p v-if="this.message._showTime" class="time">{{ message._timeStr }}</p>
             <div class="message-avatar-content-container">
                 <div class="avatar-container">
-<!--                    <input id="checkbox" v-if="sharedConversationState.enableMessageMultiSelection" type="checkbox"-->
-<!--                           :value="message"-->
-<!--                           v-model="sharedPickState.messages"/>-->
+                    <checkbox id="checkbox" v-if="sharedConversationState.enableMessageMultiSelection" type="checkbox"
+                           :value="message"
+                           v-model="sharedPickState.messages"/>
                     <img
                         @click="onClickUserPortrait(message.from)"
                         @contextmenu.prevent="openMessageSenderContextMenu($event, message)"
