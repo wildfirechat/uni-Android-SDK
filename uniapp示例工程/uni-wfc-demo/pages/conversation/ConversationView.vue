@@ -137,6 +137,7 @@ import FavItem from "@/wfc/model/favItem";
 import ConversationType from "@/wfc/model/conversationType";
 import GroupMemberType from "@/wfc/model/groupMemberType";
 import CompositeMessageContent from "@/wfc/messages/compositeMessageContent";
+import ConnectionStatus from "../../wfc/client/connectionStatus";
 
 var amr;
 export default {
@@ -691,6 +692,9 @@ export default {
         uni.setNavigationBarTitle({
             title: this.targetUserOnlineStateDesc ? this.conversationTitle + `(${this.targetUserOnlineStateDesc})` : this.conversationTitle
         });
+        // if (wfc.getConnectionStatus() === ConnectionStatus.ConnectionStatusConnected){
+        //     store._loadDefaultData();
+        // }
     },
 
     beforeDestroy() {
@@ -710,6 +714,10 @@ export default {
         if (this.sharedConversationState.shouldAutoScrollToBottom) {
             let messageListElement = this.$refs['conversationMessageList'];
             // messageListElement.scroll({top: messageListElement.scrollHeight, left: 0, behavior: 'auto'})
+            console.log('to scroll to bottom')
+            uni.pageScrollTo({
+                scrollTop:999999,
+            });
         } else {
             // 用户滑动到上面之后，收到新消息，不自动滑动到最下面
         }
