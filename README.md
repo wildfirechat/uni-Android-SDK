@@ -4,10 +4,14 @@
 
 本项目正在活跃开发中，最终目标：
 
+**Android IM Client 原生插件已可用**
+
 0. 提供两个插件```uni-client-module```和```uni-uikit-module```，分别是 IM 能力层插件和 UI 层插件
-1. ```uni-app```层提供对```uni-client-module``` 插件的封装，接口和```web/pc/wx```一致
-2. ```uni-app```层提供对```uni-uikit-module``` 插件的封装，支持```uni-app```直接打开原生界面
-3. 支持推送
+
+    1. [x] ```uni-app```层提供对```uni-client-module``` 插件的封装，接口和```web/pc/wx```一致
+    2. [ ] ```uni-app```层提供对```uni-uikit-module``` 插件的封装，支持```uni-app```直接打开原生界面
+
+1. 支持推送
 
 ## 快速开始
 
