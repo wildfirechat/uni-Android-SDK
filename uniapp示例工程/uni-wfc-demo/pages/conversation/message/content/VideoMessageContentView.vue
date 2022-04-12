@@ -1,11 +1,9 @@
 <template>
     <div class="video-content-container">
-        <video @click.prevent="preview(message)" preload="metadata"
+        <video preload="metadata"
                controls
                draggable="true"
                @dragstart="dragVideo($event)"
-               controlsList="nodownload"
-               disablePictureInPicture
                :poster="'data:video/jpeg;base64,' + message.messageContent.thumbnail"
                :src="message.messageContent.remotePath +'#t=0.1'"/>
     </div>
@@ -34,7 +32,11 @@ export default {
                 this.$parent.previewCompositeMessage(message.messageUid);
             } else {
                 console.log('preview', message);
-                store.previewMessage(message, true);
+                //store.previewMessage(message, true);
+                uni.previewImage({
+                    current: 1,
+                    urls: [this.message.messageContent.remotePath]
+                });
             }
         },
 
