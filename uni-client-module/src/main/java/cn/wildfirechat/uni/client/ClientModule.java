@@ -18,6 +18,7 @@ import cn.wildfirechat.message.MessageContent;
 import cn.wildfirechat.message.MessageContentMediaType;
 import cn.wildfirechat.message.core.MessagePayload;
 import cn.wildfirechat.message.core.MessageStatus;
+import cn.wildfirechat.message.core.PersistFlag;
 import cn.wildfirechat.model.ChannelInfo;
 import cn.wildfirechat.model.ChatRoomInfo;
 import cn.wildfirechat.model.ChatRoomMembersInfo;
@@ -118,7 +119,8 @@ public class ClientModule extends UniModule {
 
     @UniJSMethod(uiThread = false)
     public void registerMessageFlag(int type, int flag) {
-        // TODO
+        PersistFlag persistFlag = PersistFlag.flag(flag);
+        ChatManager.Instance().registerMessageFlag(type, persistFlag);
     }
 
     @UniJSMethod(uiThread = false)

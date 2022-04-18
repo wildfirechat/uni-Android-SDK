@@ -1672,6 +1672,21 @@ public class ChatManager {
     }
 
     /**
+     * 注册自定义消息的存储类型
+     * 给 uniapp 原生插件使用
+     *
+     * @param type 消息类型
+     * @param flag 消息存储类型
+     */
+    public void registerMessageFlag(int type, PersistFlag flag) {
+        try {
+            mClient.registerMessageFlag(type, flag.getValue());
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * 插入消息
      *
      * @param conversation 目标会话
@@ -3041,10 +3056,10 @@ public class ChatManager {
     /**
      * 获取远程文件记录
      *
-     * @param conversation    会话，如果为空则获取当前用户所有收到和发出的文件记录
-     * @param fromUser        文件发送用户，如果为空则获取该用户发出的文件记录
+     * @param conversation     会话，如果为空则获取当前用户所有收到和发出的文件记录
+     * @param fromUser         文件发送用户，如果为空则获取该用户发出的文件记录
      * @param beforeMessageUid 起始消息的消息uid
-     * @param count           获取消息的条数
+     * @param count            获取消息的条数
      * @param callback
      */
     public void getConversationFileRecords(Conversation conversation, String fromUser, long beforeMessageUid, int count, GetFileRecordCallback callback) {
