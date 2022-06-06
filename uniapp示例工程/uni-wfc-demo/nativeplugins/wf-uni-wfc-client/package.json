@@ -2,7 +2,7 @@
     "name": "野火IM SDK",
     "id": "wf-uni-wfc-client",
     "version": "0.1.0",
-    "description": "野火IM Android 原生插件",
+    "description": "野火IM 原生插件",
     "_dp_type": "nativeplugin",
     "_dp_nativeplugin": {
         "android": {
@@ -25,6 +25,25 @@
                 "targetCompatibility": "1.8"
             },
             "useAndroidX": true
-        }
+        },
+		"ios": {
+			"plugins": [{
+			    "type": "module",
+			    "name": "uni-wfc-client",
+			    "class": "WFClientModule"
+			}],
+			"frameworks": [  
+			    "WFChatClient.framework"
+			],  
+			"embedFrameworks": [  
+			    "WFChatClient.framework"
+			],
+			"validArchitectures": [
+                "arm64"
+            ], 
+			"hooksClass": "WFClientProxy",
+			"integrateType": "framework",
+			"deploymentTarget": "9.0"
+		}
     }
 }

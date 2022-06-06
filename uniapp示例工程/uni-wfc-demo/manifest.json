@@ -1,6 +1,6 @@
 {
     "name" : "uni-wfc-demo",
-    "appid" : "__UNI__66D4E6D",
+    "appid" : "__UNI__BE5CC7E",
     "description" : "",
     "versionName" : "1.0.0",
     "versionCode" : 101,
@@ -52,11 +52,11 @@
             }
         },
         "nativePlugins" : {
-            "uni-wfc-client" : {
+            "wf-uni-wfc-client" : {
                 "__plugin_info__" : {
                     "name" : "野火IM SDK",
-                    "description" : "野火IM Android 原生插件",
-                    "platforms" : "Android",
+                    "description" : "野火IM 原生插件",
+                    "platforms" : "Android,iOS",
                     "url" : "",
                     "android_package_name" : "cn.wildfirechat.uni.demo",
                     "ios_bundle_id" : "",
