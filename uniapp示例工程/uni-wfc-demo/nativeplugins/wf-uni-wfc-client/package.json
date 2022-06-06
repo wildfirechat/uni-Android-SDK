@@ -29,7 +29,7 @@
 		"ios": {
 			"plugins": [{
 			    "type": "module",
-			    "name": "uni-wfc-client",
+			    "name": "wf-uni-wfc-client",
 			    "class": "WFClientModule"
 			}],
 			"frameworks": [  
