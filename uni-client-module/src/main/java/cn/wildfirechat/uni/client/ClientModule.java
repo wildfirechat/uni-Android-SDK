@@ -94,7 +94,7 @@ public class ClientModule extends UniModule {
 
     // 一定要调这个函数，触发对mUniSDKInstance 的赋值
     @UniJSMethod(uiThread = false)
-    public void init() {
+    public void initProto() {
         ClientModule.uniSDKInstance = mUniSDKInstance;
     }
 
